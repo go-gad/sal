@@ -8,7 +8,7 @@ import (
 	"github.com/go-gad/sal/looker/bookstore"
 )
 
-func TestLookAt(t *testing.T) {
+func TestLookAtInterface(t *testing.T) {
 	var typ reflect.Type = reflect.TypeOf((*bookstore.StoreClient)(nil)).Elem()
-	looker.LookAt(typ)
+	looker.LookAtInterface(typ)
 }

@@ -27,13 +27,13 @@ func LookAtInterface(typ reflect.Type) {
 			Name: mt.Name,
 		}
 		pf("%#v", m)
-		LookAtMethodParameters(typ.Method(i).Type)
+		LookAtFuncParameters(typ.Method(i).Type)
 		p("-------")
 	}
 }
 
-func LookAtMethodParameters(mt reflect.Type) {
-	pf("look at args for %q", mt.Kind())
+func LookAtFuncParameters(mt reflect.Type) {
+	pf("look at args for kind %q", mt.Kind())
 	for i := 0; i < mt.NumIn(); i++ {
 		LookAtParameter(mt.In(i))
 	}
@@ -47,8 +47,16 @@ func LookAtParameter(at reflect.Type) {
 	case reflect.Ptr:
 		at = at.Elem()
 		pf("parameter name %q type %q basepkg %q", at.Name(), at.Kind(), path.Base(at.PkgPath()))
+		LookAtFields(at)
 	default:
 		pf("unsupported parameter name %q type %q basepkg %q", at.Name(), at.Kind(), path.Base(at.PkgPath()))
+	}
+}
+
+func LookAtFields(st reflect.Type) {
+	for i := 0; i < st.NumField(); i++ {
+		ft := st.Field(i)
+		pf(">>> field %s", ft.Name)
 	}
 }
 

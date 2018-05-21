@@ -20,20 +20,27 @@ type CreateAuthorResp struct {
 	CreatedAt time.Time
 }
 
-type FindAuthorReq int64
+type GetAuthorsReq int64
 
-func (r *FindAuthorReq) Query() string {
-	return `SELECT id, created_at, name, desc FROM authors WHERE id=$1`
+func (r *GetAuthorsReq) Query() string {
+	return `SELECT id, created_at, name, desc FROM authors WHERE id>$1`
 }
 
-type FindAuthorResp struct {
+type GetAuthorsResp struct {
 	Id        int64
 	CreatedAt time.Time
 	Name      string
 	Desc      string
 }
 
+type UpdateAuthorReq struct {
+	Id   int64
+	Name string
+	Desc string
+}
+
 type StoreClient interface {
 	CreateAuthor(context.Context, *CreateAuthorReq) (*CreateAuthorResp, error)
-	FindAuthor(context.Context, FindAuthorReq) (*FindAuthorResp, error)
+	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)
+	UpdateAuthor(context.Context, *UpdateAuthorReq) error
 }

@@ -10,7 +10,7 @@ type salStoreClient struct {
 	DB *sql.DB
 }
 
-func New(db *sql.DB) *salStoreClient {
+func NewStoreClient(db *sql.DB) *salStoreClient {
 	return &salStoreClient{DB: db}
 }
 

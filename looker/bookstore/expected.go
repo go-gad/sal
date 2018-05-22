@@ -96,4 +96,18 @@ func (s *salStoreClient) GetAuthors(ctx context.Context, req *GetAuthorsReq) ([]
 	return list, nil
 }
 
+func (s *salStoreClient) UpdateAuthor(ctx context.Context, req *UpdateAuthorReq) error {
+	// sql.DB.Exec
+	args := []interface{}{
+		&req.Name,
+		&req.Desc,
+		&req.Id,
+	}
+	_, err := s.DB.Exec(req.Query(), args...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type keysDest map[string]interface{}

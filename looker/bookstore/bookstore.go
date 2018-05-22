@@ -34,9 +34,13 @@ type GetAuthorsResp struct {
 }
 
 type UpdateAuthorReq struct {
-	Id   int64
 	Name string
 	Desc string
+	Id   int64 // !!!
+}
+
+func (r *UpdateAuthorReq) Query() string {
+	return `UPDATE authors SET name=$1, desc=$2 WHERE id=$3`
 }
 
 type StoreClient interface {

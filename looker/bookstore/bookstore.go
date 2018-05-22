@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+type StoreClient interface {
+	CreateAuthor(context.Context, *CreateAuthorReq) (*CreateAuthorResp, error)
+	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)
+	UpdateAuthor(context.Context, *UpdateAuthorReq) error
+}
+
 type CreateAuthorReq struct {
 	Name string
 	Desc string
@@ -41,10 +47,4 @@ type UpdateAuthorReq struct {
 
 func (r *UpdateAuthorReq) Query() string {
 	return `UPDATE authors SET name=$1, desc=$2 WHERE id=$3`
-}
-
-type StoreClient interface {
-	CreateAuthor(context.Context, *CreateAuthorReq) (*CreateAuthorResp, error)
-	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)
-	UpdateAuthor(context.Context, *UpdateAuthorReq) error
 }

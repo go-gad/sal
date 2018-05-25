@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-func LookAtInterface(typ reflect.Type) {
+func LookAtInterface(typ reflect.Type) *Interface {
 	pf("start analyze pkg %q interface %q", typ.PkgPath(), typ.Name())
 	pkg := &Package{
 		Name: path.Base(typ.PkgPath()),
@@ -30,6 +30,7 @@ func LookAtInterface(typ reflect.Type) {
 		LookAtFuncParameters(typ.Method(i).Type)
 		p("-------")
 	}
+	return intf
 }
 
 func LookAtFuncParameters(mt reflect.Type) {

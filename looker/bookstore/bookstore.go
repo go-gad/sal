@@ -26,10 +26,12 @@ type CreateAuthorResp struct {
 	CreatedAt time.Time
 }
 
-type GetAuthorsReq int64
+type GetAuthorsReq struct {
+	Id int64
+}
 
 func (r *GetAuthorsReq) Query() string {
-	return `SELECT id, created_at, name, desc FROM authors WHERE id>$1`
+	return `SELECT id, created_at, name, desc FROM authors WHERE id>@id`
 }
 
 type GetAuthorsResp struct {

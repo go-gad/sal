@@ -57,7 +57,7 @@ func (s *salStoreClient) CreateAuthor(ctx context.Context, req *CreateAuthorReq)
 
 func (s *salStoreClient) GetAuthors(ctx context.Context, req *GetAuthorsReq) ([]*GetAuthorsResp, error) {
 	args := []interface{}{
-		&req,
+		&req.Id,
 	}
 	rows, err := s.DB.Query(req.Query(), args...)
 	if err != nil {

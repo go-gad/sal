@@ -13,6 +13,9 @@ func TestLookAtInterface(t *testing.T) {
 	var typ reflect.Type = reflect.TypeOf((*bookstore.StoreClient)(nil)).Elem()
 	intf := looker.LookAtInterface(typ)
 	pf("Interface %#v", intf)
+	for i, v := range intf.Methods {
+		pf("\t[%d] method %q", i, v.Name)
+	}
 
 }
 

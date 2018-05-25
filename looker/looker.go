@@ -8,27 +8,28 @@ import (
 
 func LookAtInterface(typ reflect.Type) *Interface {
 	pf("start analyze pkg %q interface %q", typ.PkgPath(), typ.Name())
-	pkg := &Package{
-		Name: path.Base(typ.PkgPath()),
-	}
-	pf("%#v", pkg)
+	//pkg := &Package{
+	//Name: path.Base(typ.PkgPath()),
+	//}
+	//pf("%#v", pkg)
 
 	intf := &Interface{
 		Name:    typ.Name(),
 		Methods: make(Methods, 0, typ.NumMethod()),
 	}
-	pkg.Interface = intf
-	pf("%#v", intf)
+	//pkg.Interface = intf
+	//pf("%#v", intf)
 
-	p("-------")
+	//p("-------")
 	for i := 0; i < typ.NumMethod(); i++ {
 		mt := typ.Method(i)
 		m := &Method{
 			Name: mt.Name,
 		}
-		pf("%#v", m)
+		//pf("%#v", m)
 		LookAtFuncParameters(typ.Method(i).Type)
-		p("-------")
+		//p("-------")
+		intf.Methods = append(intf.Methods, m)
 	}
 	return intf
 }

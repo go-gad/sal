@@ -18,7 +18,7 @@ type CreateAuthorReq struct {
 }
 
 func (cr *CreateAuthorReq) Query() string {
-	return `INSERT INTO authors (name, desc, created_at) VALUES($1, $2, now()) RETURNING id, created_at`
+	return `INSERT INTO authors (name, desc, created_at) VALUES(@name, @desc, now()) RETURNING id, created_at`
 }
 
 type CreateAuthorResp struct {
@@ -40,11 +40,11 @@ type GetAuthorsResp struct {
 }
 
 type UpdateAuthorReq struct {
+	Id   int64
 	Name string
 	Desc string
-	Id   int64 // !!!
 }
 
 func (r *UpdateAuthorReq) Query() string {
-	return `UPDATE authors SET name=$1, desc=$2 WHERE id=$3`
+	return `UPDATE authors SET name=@name, desc=@desc WHERE id=@id`
 }

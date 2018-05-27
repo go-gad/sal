@@ -7,7 +7,7 @@ import (
 )
 
 type StoreClient interface {
-	CreateAuthor(context.Context, *CreateAuthorReq) (*CreateAuthorResp, error)
+	CreateAuthor(ctx context.Context, req *CreateAuthorReq) (*CreateAuthorResp, error)
 	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)
 	UpdateAuthor(context.Context, *UpdateAuthorReq) error
 }

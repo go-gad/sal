@@ -15,6 +15,9 @@ func TestLookAtInterface(t *testing.T) {
 	pf("Interface %#v", intf)
 	for i, v := range intf.Methods {
 		pf("\t[%d] method %q", i, v.Name)
+		for _, prm := range v.In {
+			pf("\t\tparam %#v", prm)
+		}
 	}
 
 }

@@ -4,6 +4,8 @@ package bookstore
 import (
 	"context"
 	"database/sql"
+
+	foobar "github.com/go-gad/sal/looker/bookstore/go-foobar"
 )
 
 type salStoreClient struct {
@@ -14,7 +16,7 @@ func NewStoreClient(db *sql.DB) *salStoreClient {
 	return &salStoreClient{DB: db}
 }
 
-func (s *salStoreClient) CreateAuthor(ctx context.Context, req *CreateAuthorReq) (*CreateAuthorResp, error) {
+func (s *salStoreClient) CreateAuthor(ctx context.Context, req *foobar.CreateAuthorReq) (*CreateAuthorResp, error) {
 	args := []interface{}{
 		&req.Name,
 		&req.Desc,

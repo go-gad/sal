@@ -4,10 +4,12 @@ package bookstore
 import (
 	"context"
 	"time"
+
+	"github.com/go-gad/sal/looker/bookstore/go-foobar"
 )
 
 type StoreClient interface {
-	CreateAuthor(ctx context.Context, req *CreateAuthorReq) (*CreateAuthorResp, error)
+	CreateAuthor(ctx context.Context, req *foobar.CreateAuthorReq) (*CreateAuthorResp, error)
 	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)
 	UpdateAuthor(context.Context, *UpdateAuthorReq) error
 }
@@ -15,10 +17,6 @@ type StoreClient interface {
 type CreateAuthorReq struct {
 	Name string
 	Desc string
-}
-
-func (cr *CreateAuthorReq) Query() string {
-	return `INSERT INTO authors (name, desc, created_at) VALUES(@name, @desc, now()) RETURNING id, created_at`
 }
 
 type CreateAuthorResp struct {

@@ -3,6 +3,7 @@ package looker
 import (
 	"log"
 	"reflect"
+	"strings"
 )
 
 func LookAtInterface(typ reflect.Type) *Interface {
@@ -50,12 +51,15 @@ func LookAtParameter(at reflect.Type) *Parameter {
 		at = at.Elem()
 		pointer = true
 	}
+
 	return &Parameter{
-		Pkg:      at.PkgPath(),
+		PkgPath:  at.PkgPath(),
+		PkgName:  strings.Split(at.String(), ".")[0],
 		BaseType: at.Kind().String(),
 		UserType: at.Name(),
 		Pointer:  pointer,
 	}
+
 	//
 	//switch at.Kind() {
 	//case reflect.Interface:
@@ -96,7 +100,8 @@ type Method struct {
 type Methods []*Method
 
 type Parameter struct {
-	Pkg      string
+	PkgPath  string
+	PkgName  string
 	BaseType string
 	UserType string
 	Pointer  bool

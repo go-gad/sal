@@ -7,42 +7,37 @@ import (
 )
 
 func LookAtInterface(typ reflect.Type) *Interface {
-	//pf("start analyze pkg %q interface %q", typ.PkgPath(), typ.Name())
-	//pkg := &Package{
-	//Name: path.Base(typ.PkgPath()),
-	//}
-	//pf("%#v", pkg)
-
 	intf := &Interface{
 		Name:    typ.Name(),
 		Methods: make(Methods, 0, typ.NumMethod()),
 	}
-	//pkg.Interface = intf
-	//pf("%#v", intf)
 
-	//p("-------")
 	for i := 0; i < typ.NumMethod(); i++ {
 		mt := typ.Method(i)
 		m := Method{
 			Name: mt.Name,
 		}
-		//pf("%#v", m)
-		in := LookAtFuncParameters(typ.Method(i).Type)
+		in, out := LookAtFuncParameters(typ.Method(i).Type)
 		m.In = in
-		//p("-------")
+		m.Out = out
+
 		intf.Methods = append(intf.Methods, &m)
 	}
 	return intf
 }
 
-func LookAtFuncParameters(mt reflect.Type) Parameters {
-	//pf("look at args for kind %q", mt.Kind())
+func LookAtFuncParameters(mt reflect.Type) (Parameters, Parameters) {
 	var in = make([]*Parameter, 0)
 	for i := 0; i < mt.NumIn(); i++ {
 		in = append(in, LookAtParameter(mt.In(i)))
 	}
 
-	return in
+	var out = make([]*Parameter, 0)
+	for i := 0; i < mt.NumOut(); i++ {
+		out = append(out, LookAtParameter(mt.Out(i)))
+	}
+
+	return in, out
 }
 
 func LookAtParameter(at reflect.Type) *Parameter {
@@ -59,31 +54,26 @@ func LookAtParameter(at reflect.Type) *Parameter {
 		Pointer:  pointer,
 	}
 
-	if prm.BaseType == "struct" {
+	if prm.BaseType == reflect.Struct.String() {
 		prm.Fields = LookAtFields(at)
 	}
 
 	return &prm
-	//
-	//switch at.Kind() {
-	//case reflect.Interface:
-	//	pf("parameter name %q type %q basepkg %q", at.Name(), at.Kind(), path.Base(at.PkgPath()))
-	//case reflect.Ptr:
-	//	at = at.Elem()
-	//	pf("parameter name %q type %q basepkg %q", at.Name(), at.Kind(), path.Base(at.PkgPath()))
-	//	LookAtFields(at)
-	//default:
-	//	pf("unsupported parameter name %q type %q basepkg %q", at.Name(), at.Kind(), path.Base(at.PkgPath()))
-	//}
-	//
-	//return &prm
 }
 
 func LookAtFields(st reflect.Type) Fields {
 	fields := make(Fields, 0, st.NumField())
 	for i := 0; i < st.NumField(); i++ {
 		ft := st.Field(i)
-		fields = append(fields, &Field{Name: ft.Name})
+		field := &Field{
+			Name:      ft.Name,
+			PkgPath:   ft.Type.PkgPath(),
+			PkgName:   strings.Split(ft.Type.String(), ".")[0],
+			BaseType:  ft.Type.Kind().String(),
+			UserType:  ft.Type.Name(),
+			Anonymous: ft.Anonymous,
+		}
+		fields = append(fields, field)
 	}
 	return fields
 }
@@ -101,6 +91,7 @@ type Interface struct {
 type Method struct {
 	Name string
 	In   Parameters
+	Out  Parameters
 }
 
 type Methods []*Method
@@ -115,7 +106,12 @@ type Parameter struct {
 }
 
 type Field struct {
-	Name string
+	Name      string
+	PkgPath   string
+	PkgName   string
+	BaseType  string
+	UserType  string
+	Anonymous bool
 }
 
 type Fields []*Field

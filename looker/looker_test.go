@@ -16,10 +16,18 @@ func TestLookAtInterface(t *testing.T) {
 	for i, v := range intf.Methods {
 		pf("\t[%d] method %q", i, v.Name)
 		for _, prm := range v.In {
-			pf("\t\tparam %#v", prm)
+			pf("\t\tparam IN %#v", prm)
 			if prm.BaseType == "struct" {
 				for _, f := range prm.Fields {
-					pf("\t\t\tfield %q", f.Name)
+					pf("\t\t\tfield %#v", f)
+				}
+			}
+		}
+		for _, prm := range v.Out {
+			pf("\t\tparam OUT %#v", prm)
+			if prm.BaseType == "struct" {
+				for _, f := range prm.Fields {
+					pf("\t\t\tfield %#v", f)
 				}
 			}
 		}

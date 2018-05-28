@@ -51,8 +51,7 @@ func LookAtParameter(at reflect.Type) *Parameter {
 		at = at.Elem()
 		pointer = true
 	}
-
-	return &Parameter{
+	prm := Parameter{
 		PkgPath:  at.PkgPath(),
 		PkgName:  strings.Split(at.String(), ".")[0],
 		BaseType: at.Kind().String(),
@@ -60,6 +59,11 @@ func LookAtParameter(at reflect.Type) *Parameter {
 		Pointer:  pointer,
 	}
 
+	if prm.BaseType == "struct" {
+		prm.Fields = LookAtFields(at)
+	}
+
+	return &prm
 	//
 	//switch at.Kind() {
 	//case reflect.Interface:
@@ -75,11 +79,13 @@ func LookAtParameter(at reflect.Type) *Parameter {
 	//return &prm
 }
 
-func LookAtFields(st reflect.Type) {
+func LookAtFields(st reflect.Type) Fields {
+	fields := make(Fields, 0, st.NumField())
 	for i := 0; i < st.NumField(); i++ {
 		ft := st.Field(i)
-		pf(">>> field %s", ft.Name)
+		fields = append(fields, &Field{Name: ft.Name})
 	}
+	return fields
 }
 
 type Package struct {
@@ -105,7 +111,14 @@ type Parameter struct {
 	BaseType string
 	UserType string
 	Pointer  bool
+	Fields   Fields
 }
+
+type Field struct {
+	Name string
+}
+
+type Fields []*Field
 
 type Parameters []*Parameter
 

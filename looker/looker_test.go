@@ -17,6 +17,11 @@ func TestLookAtInterface(t *testing.T) {
 		pf("\t[%d] method %q", i, v.Name)
 		for _, prm := range v.In {
 			pf("\t\tparam %#v", prm)
+			if prm.BaseType == "struct" {
+				for _, f := range prm.Fields {
+					pf("\t\t\tfield %q", f.Name)
+				}
+			}
 		}
 	}
 

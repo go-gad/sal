@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/go-gad/sal/looker/bookstore"
+	"github.com/go-gad/sal/looker/bookstore/go-foobar"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
@@ -19,7 +20,7 @@ func TestSalStoreClient_CreateAuthor(t *testing.T) {
 	defer db.Close()
 	client := bookstore.NewStoreClient(db)
 
-	req := bookstore.CreateAuthorReq{Name: "foo", Desc: "Bar"}
+	req := foobar.CreateAuthorReq{Name: "foo", Desc: "Bar"}
 
 	rows := sqlmock.NewRows([]string{"id", "created_at"}).AddRow(1, time.Now().Truncate(time.Millisecond))
 	mock.ExpectQuery(`INSERT INTO authors .+`).WithArgs(req.Name, req.Desc).WillReturnRows(rows)

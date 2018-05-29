@@ -1,4 +1,4 @@
-package bookstore_test
+package exp_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 
 	"context"
 
-	"github.com/go-gad/sal/looker/bookstore"
+	"github.com/go-gad/sal/looker/bookstore/exp"
 	"github.com/go-gad/sal/looker/bookstore/go-foobar"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
@@ -18,7 +18,7 @@ func TestSalStoreClient_CreateAuthor(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	client := bookstore.NewStoreClient(db)
+	client := exp.NewStoreClient(db)
 
 	req := foobar.CreateAuthorReq{Name: "foo", Desc: "Bar"}
 

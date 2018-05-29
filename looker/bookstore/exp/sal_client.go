@@ -1,10 +1,11 @@
 // It is an example of code that should be generated.
-package bookstore
+package exp
 
 import (
 	"context"
 	"database/sql"
 
+	"github.com/go-gad/sal/looker/bookstore"
 	foobar "github.com/go-gad/sal/looker/bookstore/go-foobar"
 )
 
@@ -16,7 +17,7 @@ func NewStoreClient(db *sql.DB) *salStoreClient {
 	return &salStoreClient{DB: db}
 }
 
-func (s *salStoreClient) CreateAuthor(ctx context.Context, req *foobar.CreateAuthorReq) (*CreateAuthorResp, error) {
+func (s *salStoreClient) CreateAuthor(ctx context.Context, req *foobar.CreateAuthorReq) (*bookstore.CreateAuthorResp, error) {
 	args := []interface{}{
 		&req.Name,
 		&req.Desc,
@@ -39,7 +40,7 @@ func (s *salStoreClient) CreateAuthor(ctx context.Context, req *foobar.CreateAut
 		return nil, sql.ErrNoRows
 	}
 
-	var resp CreateAuthorResp
+	var resp bookstore.CreateAuthorResp
 	var mm = make(keysDest)
 	mm["id"] = &resp.Id
 	mm["created_at"] = &resp.CreatedAt
@@ -57,7 +58,7 @@ func (s *salStoreClient) CreateAuthor(ctx context.Context, req *foobar.CreateAut
 	return &resp, nil
 }
 
-func (s *salStoreClient) GetAuthors(ctx context.Context, req *GetAuthorsReq) ([]*GetAuthorsResp, error) {
+func (s *salStoreClient) GetAuthors(ctx context.Context, req *bookstore.GetAuthorsReq) ([]*bookstore.GetAuthorsResp, error) {
 	args := []interface{}{
 		&req.Id,
 	}
@@ -73,10 +74,10 @@ func (s *salStoreClient) GetAuthors(ctx context.Context, req *GetAuthorsReq) ([]
 
 	// sql.DB.Query
 
-	var list = make([]*GetAuthorsResp, 0)
+	var list = make([]*bookstore.GetAuthorsResp, 0)
 
 	for rows.Next() {
-		var resp GetAuthorsResp
+		var resp bookstore.GetAuthorsResp
 		var mm = make(keysDest)
 		mm["id"] = &resp.Id
 		mm["created_at"] = &resp.CreatedAt
@@ -98,7 +99,7 @@ func (s *salStoreClient) GetAuthors(ctx context.Context, req *GetAuthorsReq) ([]
 	return list, nil
 }
 
-func (s *salStoreClient) UpdateAuthor(ctx context.Context, req *UpdateAuthorReq) error {
+func (s *salStoreClient) UpdateAuthor(ctx context.Context, req *bookstore.UpdateAuthorReq) error {
 	// sql.DB.Exec
 	args := []interface{}{
 		&req.Name,

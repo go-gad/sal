@@ -5,12 +5,22 @@ import (
 	"testing"
 
 	"github.com/go-gad/sal/looker"
-	"github.com/go-gad/sal/looker/bookstore"
+	pkg_ "github.com/go-gad/sal/looker/bookstore"
 )
+
+func TestLookAtInterfaces(t *testing.T) {
+	pf := getLogger(t)
+	pkgPath := "github.com/go-gad/sal/looker/bookstore"
+	var list = []reflect.Type{
+		reflect.TypeOf((*pkg_.StoreClient)(nil)).Elem(),
+	}
+	pkg := looker.LookAtInterfaces(pkgPath, list)
+	pf("package %#v", pkg)
+}
 
 func TestLookAtInterface(t *testing.T) {
 	pf := getLogger(t)
-	var typ reflect.Type = reflect.TypeOf((*bookstore.StoreClient)(nil)).Elem()
+	var typ reflect.Type = reflect.TypeOf((*pkg_.StoreClient)(nil)).Elem()
 	intf := looker.LookAtInterface(typ)
 	pf("Interface %#v", intf)
 	for i, v := range intf.Methods {

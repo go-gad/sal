@@ -6,6 +6,19 @@ import (
 	"strings"
 )
 
+func LookAtInterfaces(pkgPath string, is []reflect.Type) *Package {
+	pkg := Package{
+		PkgPath:    pkgPath,
+		Interfaces: make(Interfaces, 0, len(is)),
+	}
+	for _, it := range is {
+		intf := LookAtInterface(it)
+		pkg.Interfaces = append(pkg.Interfaces, intf)
+	}
+
+	return &pkg
+}
+
 func LookAtInterface(typ reflect.Type) *Interface {
 	intf := &Interface{
 		Name:    typ.Name(),
@@ -79,14 +92,16 @@ func LookAtFields(st reflect.Type) Fields {
 }
 
 type Package struct {
-	Name      string
-	Interface *Interface
+	PkgPath    string
+	Interfaces Interfaces
 }
 
 type Interface struct {
 	Name    string
 	Methods Methods
 }
+
+type Interfaces []*Interface
 
 type Method struct {
 	Name string

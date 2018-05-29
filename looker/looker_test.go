@@ -59,7 +59,7 @@ func TestEncodeGob(t *testing.T) {
 	if err := f.Close(); err != nil {
 		t.Fatal(err)
 	}
-	pkg := &looker.Package{PkgPath: "some/path"}
+	pkg := &looker.Package{ImportPath: "some/path"}
 
 	if err := looker.EncodeGob(filename, pkg); err != nil {
 		t.Fatal(err)

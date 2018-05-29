@@ -6,12 +6,11 @@ import (
 	"log"
 	"os"
 	"reflect"
-	"strings"
 )
 
 func LookAtInterfaces(pkgPath string, is []reflect.Type) *Package {
 	pkg := Package{
-		PkgPath:    pkgPath,
+		ImportPath: pkgPath,
 		Interfaces: make(Interfaces, 0, len(is)),
 	}
 	for _, it := range is {
@@ -63,11 +62,10 @@ func LookAtParameter(at reflect.Type) *Parameter {
 		pointer = true
 	}
 	prm := Parameter{
-		PkgPath:  at.PkgPath(),
-		PkgName:  strings.Split(at.String(), ".")[0],
-		BaseType: at.Kind().String(),
-		UserType: at.Name(),
-		Pointer:  pointer,
+		ImportPath: at.PkgPath(),
+		BaseType:   at.Kind().String(),
+		UserType:   at.Name(),
+		Pointer:    pointer,
 	}
 
 	if prm.BaseType == reflect.Struct.String() {
@@ -82,12 +80,11 @@ func LookAtFields(st reflect.Type) Fields {
 	for i := 0; i < st.NumField(); i++ {
 		ft := st.Field(i)
 		field := &Field{
-			Name:      ft.Name,
-			PkgPath:   ft.Type.PkgPath(),
-			PkgName:   strings.Split(ft.Type.String(), ".")[0],
-			BaseType:  ft.Type.Kind().String(),
-			UserType:  ft.Type.Name(),
-			Anonymous: ft.Anonymous,
+			Name:       ft.Name,
+			ImportPath: ft.Type.PkgPath(),
+			BaseType:   ft.Type.Kind().String(),
+			UserType:   ft.Type.Name(),
+			Anonymous:  ft.Anonymous,
 		}
 		fields = append(fields, field)
 	}
@@ -95,7 +92,7 @@ func LookAtFields(st reflect.Type) Fields {
 }
 
 type Package struct {
-	PkgPath    string
+	ImportPath string
 	Interfaces Interfaces
 }
 
@@ -115,21 +112,19 @@ type Method struct {
 type Methods []*Method
 
 type Parameter struct {
-	PkgPath  string
-	PkgName  string
-	BaseType string
-	UserType string
-	Pointer  bool
-	Fields   Fields
+	ImportPath string
+	BaseType   string
+	UserType   string
+	Pointer    bool
+	Fields     Fields
 }
 
 type Field struct {
-	Name      string
-	PkgPath   string
-	PkgName   string
-	BaseType  string
-	UserType  string
-	Anonymous bool
+	Name       string
+	ImportPath string
+	BaseType   string
+	UserType   string
+	Anonymous  bool
 }
 
 type Fields []*Field

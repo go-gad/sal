@@ -1,26 +1,24 @@
-package main
+package looker
 
 import (
 	"bytes"
 	"encoding/gob"
 	"flag"
+	"fmt"
+	"go/build"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"text/template"
-
-	"go/build"
-
-	"github.com/go-gad/sal/looker"
 )
 
 var (
 	buildFlags = flag.String("build_flags", "", "Additional flags for go build.")
 )
 
-func Reflect(importPath string, symbols []string) (*looker.Package, error) {
+func Reflect(importPath string, symbols []string) (*Package, error) {
 	program, err := writeProgram(importPath, symbols)
 	if err != nil {
 		return nil, err
@@ -46,7 +44,7 @@ func Reflect(importPath string, symbols []string) (*looker.Package, error) {
 }
 
 // run the given program and parse the output as a model.Package.
-func run(program string) (*looker.Package, error) {
+func run(program string) (*Package, error) {
 	f, err := ioutil.TempFile("", "")
 	filename := f.Name()
 	defer os.Remove(filename)
@@ -68,7 +66,7 @@ func run(program string) (*looker.Package, error) {
 	}
 
 	// Process output.
-	var pkg looker.Package
+	var pkg Package
 	if err := gob.NewDecoder(f).Decode(&pkg); err != nil {
 		return nil, err
 	}
@@ -80,7 +78,7 @@ func run(program string) (*looker.Package, error) {
 	return &pkg, nil
 }
 
-func buildAndRun(program []byte, dir string) (*looker.Package, error) {
+func buildAndRun(program []byte, dir string) (*Package, error) {
 	// We use TempDir instead of TempFile so we can control the filename.
 	tmpDir, err := ioutil.TempDir(dir, "sal_reflect_")
 	if err != nil {
@@ -131,6 +129,28 @@ func writeProgram(importPath string, symbols []string) ([]byte, error) {
 type reflectData struct {
 	ImportPath string
 	Symbols    []string
+}
+
+func EncodeGob(output string, pkg *Package) error {
+	outfile := os.Stdout
+
+	if len(output) != 0 {
+		var err error
+		if outfile, err = os.Create(output); err != nil {
+			return fmt.Errorf("failed to open output file %q: %s", output, err)
+		}
+		defer func() {
+			if err := outfile.Close(); err != nil {
+				fmt.Errorf("failed to close output file %q: %s", output, err)
+			}
+		}()
+	}
+
+	if err := gob.NewEncoder(outfile).Encode(pkg); err != nil {
+		fmt.Errorf("gob encode: %s", err)
+	}
+
+	return nil
 }
 
 // This program reflects on an interface value, and prints the

@@ -4,16 +4,13 @@ import (
 	"reflect"
 	"testing"
 
-	"io/ioutil"
-	"os"
-
+	pkg_ "github.com/go-gad/sal/internal/bookstore"
 	"github.com/go-gad/sal/looker"
-	pkg_ "github.com/go-gad/sal/looker/bookstore"
 )
 
 func TestLookAtInterfaces(t *testing.T) {
 	pf := getLogger(t)
-	pkgPath := "github.com/go-gad/sal/looker/bookstore"
+	pkgPath := "github.com/go-gad/sal/internal/bookstore"
 	var list = []reflect.Type{
 		reflect.TypeOf((*pkg_.StoreClient)(nil)).Elem(),
 	}
@@ -46,27 +43,6 @@ func TestLookAtInterface(t *testing.T) {
 		}
 	}
 
-}
-
-func TestEncodeGob(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	filename := f.Name()
-	t.Log("filename ", filename)
-	defer os.Remove(filename)
-	if err := f.Close(); err != nil {
-		t.Fatal(err)
-	}
-	pkg := &looker.Package{ImportPath: "some/path"}
-
-	if err := looker.EncodeGob(filename, pkg); err != nil {
-		t.Fatal(err)
-	}
-
-	fb, _ := ioutil.ReadFile(filename)
-	t.Logf("File content:\n%s", string(fb))
 }
 
 func getLogger(t *testing.T) func(string, ...interface{}) {

@@ -5,8 +5,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/go-gad/sal/looker/bookstore"
-	foobar "github.com/go-gad/sal/looker/bookstore/go-foobar"
+	"github.com/go-gad/sal/internal/bookstore"
 )
 
 type salStoreClient struct {
@@ -17,7 +16,7 @@ func NewStoreClient(db *sql.DB) *salStoreClient {
 	return &salStoreClient{DB: db}
 }
 
-func (s *salStoreClient) CreateAuthor(ctx context.Context, req *foobar.CreateAuthorReq) (*bookstore.CreateAuthorResp, error) {
+func (s *salStoreClient) CreateAuthor(ctx context.Context, req *bookstore.CreateAuthorReq) (*bookstore.CreateAuthorResp, error) {
 	args := []interface{}{
 		&req.Name,
 		&req.Desc,

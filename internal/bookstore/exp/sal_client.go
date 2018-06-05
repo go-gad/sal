@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/go-gad/sal"
 	"github.com/go-gad/sal/internal/bookstore"
 )
 
@@ -17,11 +18,13 @@ func NewStoreClient(db *sql.DB) *salStoreClient {
 }
 
 func (s *salStoreClient) CreateAuthor(ctx context.Context, req *bookstore.CreateAuthorReq) (*bookstore.CreateAuthorResp, error) {
-	args := []interface{}{
-		&req.Name,
-		&req.Desc,
-	}
-	rows, err := s.DB.Query(req.Query(), args...)
+	var reqMap = make(keysIntf)
+	reqMap["name"] = &req.Name
+	reqMap["desc"] = &req.Desc
+
+	pgQuery, args := processQueryAndArgs(req.Query(), reqMap)
+
+	rows, err := s.DB.Query(pgQuery, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +43,7 @@ func (s *salStoreClient) CreateAuthor(ctx context.Context, req *bookstore.Create
 	}
 
 	var resp bookstore.CreateAuthorResp
-	var mm = make(keysDest)
+	var mm = make(keysIntf)
 	mm["id"] = &resp.Id
 	mm["created_at"] = &resp.CreatedAt
 	var dest = make([]interface{}, 0, len(mm))
@@ -55,6 +58,15 @@ func (s *salStoreClient) CreateAuthor(ctx context.Context, req *bookstore.Create
 	}
 
 	return &resp, nil
+}
+
+func processQueryAndArgs(query string, reqMap keysIntf) (string, []interface{}) {
+	pgQuery, argsNames := sal.QueryArgs(query)
+	var args = make([]interface{}, 0, len(argsNames))
+	for _, name := range argsNames {
+		args = append(args, reqMap[name])
+	}
+	return pgQuery, args
 }
 
 func (s *salStoreClient) GetAuthors(ctx context.Context, req *bookstore.GetAuthorsReq) ([]*bookstore.GetAuthorsResp, error) {
@@ -77,7 +89,7 @@ func (s *salStoreClient) GetAuthors(ctx context.Context, req *bookstore.GetAutho
 
 	for rows.Next() {
 		var resp bookstore.GetAuthorsResp
-		var mm = make(keysDest)
+		var mm = make(keysIntf)
 		mm["id"] = &resp.Id
 		mm["created_at"] = &resp.CreatedAt
 		mm["name"] = &resp.Name
@@ -112,4 +124,4 @@ func (s *salStoreClient) UpdateAuthor(ctx context.Context, req *bookstore.Update
 	return nil
 }
 
-type keysDest map[string]interface{}
+type keysIntf map[string]interface{}

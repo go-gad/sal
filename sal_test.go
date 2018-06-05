@@ -8,7 +8,7 @@ import (
 )
 
 func TestQueryArgs(t *testing.T) {
-	t.Skip("todo")
+	//t.Skip("todo")
 	var tt = []struct {
 		QueryNamed string
 		QueryPg    string

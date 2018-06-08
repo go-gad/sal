@@ -94,7 +94,7 @@ func (s *salStoreClient) GetAuthors(ctx context.Context, req *bookstore.GetAutho
 		mm["created_at"] = &resp.CreatedAt
 		mm["name"] = &resp.Name
 		mm["desc"] = &resp.Desc
-		var dest = make([]interface{}, 0, len(mm))
+		var dest = make([]interface{}, 0, len(cols))
 		for _, v := range cols {
 			if intr, ok := mm[v]; ok {
 				dest = append(dest, intr)

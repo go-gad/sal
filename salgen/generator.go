@@ -6,6 +6,8 @@ import (
 	"go/format"
 	"log"
 
+	"strings"
+
 	"github.com/go-gad/sal/looker"
 )
 
@@ -37,6 +39,7 @@ func (g *generator) Generate(pkg *looker.Package, pkgName string) error {
 	g.p("package %v", pkgName)
 
 	g.p("import (")
+	g.p("%q", "context")
 	g.p("%q", pkg.ImportPath)
 	g.p(")")
 
@@ -69,7 +72,16 @@ func (g *generator) GenerateInterface(intf *looker.Interface) error {
 }
 
 func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
-	g.p("func (s *%v) %v() {", implName, mtd.Name)
+	g.p("")
+
+	inArgs := make([]string, 0, 2)
+	inArgs = append(inArgs, "ctx context.Context")
+	reqPrm := mtd.In[1]
+	inArgs = append(inArgs, "req "+reqPrm.PtrPrefix()+reqPrm.PkgAlias()+"."+reqPrm.UserType)
+	inArgsStr := strings.Join(inArgs, ", ")
+
+	g.p("func (s *%v) %v(%v) error {", implName, mtd.Name, inArgsStr)
+	g.p("return nil")
 	g.p("}")
 
 	// func (s *salStoreClient) CreateAuthor(ctx context.Context, req *bookstore.CreateAuthorReq) (*bookstore.CreateAuthorResp, error) {

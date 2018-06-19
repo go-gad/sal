@@ -2,6 +2,7 @@ package looker
 
 import (
 	"log"
+	"path"
 	"reflect"
 )
 
@@ -114,6 +115,17 @@ type Parameter struct {
 	UserType   string
 	Pointer    bool
 	Fields     Fields
+}
+
+func (prm *Parameter) PkgAlias() string {
+	return path.Base(prm.ImportPath)
+}
+
+func (prm *Parameter) PtrPrefix() string {
+	if prm.Pointer {
+		return "*"
+	}
+	return ""
 }
 
 type Field struct {

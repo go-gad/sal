@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+//go:generate salgen -destination=./act/sal_client.go -package=act github.com/go-gad/sal/internal/bookstore StoreClient
 type StoreClient interface {
 	CreateAuthor(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)
 	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)

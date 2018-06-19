@@ -1,4 +1,4 @@
-package salgen
+package main
 
 import (
 	"log"

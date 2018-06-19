@@ -71,16 +71,27 @@ func (g *generator) GenerateInterface(intf *looker.Interface) error {
 	return nil
 }
 
+type prmArgs []string
+
+func (pa prmArgs) String() string {
+	return strings.Join(pa, ",")
+}
+
 func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("")
 
-	inArgs := make([]string, 0, 2)
+	inArgs := make(prmArgs, 0, 2)
 	inArgs = append(inArgs, "ctx context.Context")
-	reqPrm := mtd.In[1]
-	inArgs = append(inArgs, "req "+reqPrm.PtrPrefix()+reqPrm.PkgAlias()+"."+reqPrm.UserType)
-	inArgsStr := strings.Join(inArgs, ", ")
+	inArgs = append(inArgs, "req "+mtd.In[1].String())
 
-	g.p("func (s *%v) %v(%v) error {", implName, mtd.Name, inArgsStr)
+	// todo: array type
+	outArgs := make(prmArgs, 0, 2)
+	if len(mtd.Out) == 2 {
+		outArgs = append(outArgs, mtd.Out[0].String())
+	}
+	outArgs = append(outArgs, "error")
+
+	g.p("func (s *%v) %v(%v) (%v) {", implName, mtd.Name, inArgs.String(), outArgs.String())
 	g.p("return nil")
 	g.p("}")
 

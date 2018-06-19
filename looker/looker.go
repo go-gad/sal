@@ -128,6 +128,10 @@ func (prm *Parameter) PtrPrefix() string {
 	return ""
 }
 
+func (prm *Parameter) String() string {
+	return prm.PtrPrefix() + prm.PkgAlias() + "." + prm.UserType
+}
+
 type Field struct {
 	Name       string
 	ImportPath string

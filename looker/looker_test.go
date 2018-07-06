@@ -50,3 +50,21 @@ func getLogger(t *testing.T) func(string, ...interface{}) {
 		t.Logf(s, kv...)
 	}
 }
+
+
+type Req1 struct {
+	ID int64
+	Name string
+}
+
+func TestLookAtParameter(t *testing.T) {
+	req := &Req1{ID: 4123, Name:"zooloo"}
+	var typ reflect.Type = reflect.TypeOf(req)
+
+	if typ.Kind() == reflect.Ptr {
+		t.Log("It is a pointer")
+		typ = typ.Elem()
+	}
+
+
+}

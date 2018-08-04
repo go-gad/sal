@@ -9,7 +9,7 @@ import (
 )
 
 func TestReflect(t *testing.T) {
-	pkg, err := looker.Reflect("github.com/go-gad/sal/internal/bookstore", []string{"StoreClient"})
+	pkg, err := looker.Reflect("github.com/go-gad/sal/examples/bookstore1", []string{"StoreClient"})
 	if err != nil {
 		t.Fatal(err)
 	}

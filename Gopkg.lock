@@ -8,6 +8,12 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -28,6 +34,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d631b18bc41edbe2e20e6da7de0b86fc1c1656fd97b86e97ce2bd51317437c2c"
+  inputs-digest = "699d1cd1ca4a6d81f35850385fa56c52690635730abcee75b1a790e12e454eea"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -4,13 +4,13 @@ import (
 	"reflect"
 	"testing"
 
-	pkg_ "github.com/go-gad/sal/internal/bookstore"
+	pkg_ "github.com/go-gad/sal/examples/bookstore1"
 	"github.com/go-gad/sal/looker"
 )
 
 func TestLookAtInterfaces(t *testing.T) {
 	pf := getLogger(t)
-	pkgPath := "github.com/go-gad/sal/internal/bookstore"
+	pkgPath := "github.com/go-gad/sal/examples/bookstore1"
 	var list = []reflect.Type{
 		reflect.TypeOf((*pkg_.StoreClient)(nil)).Elem(),
 	}
@@ -53,20 +53,18 @@ func getLogger(t *testing.T) func(string, ...interface{}) {
 	}
 }
 
-
 type Req1 struct {
-	ID int64
+	ID   int64
 	Name string
 }
 
 func TestLookAtParameter(t *testing.T) {
-	req := &Req1{ID: 4123, Name:"zooloo"}
+	req := &Req1{ID: 4123, Name: "zooloo"}
 	var typ reflect.Type = reflect.TypeOf(req)
 
 	if typ.Kind() == reflect.Ptr {
 		t.Log("It is a pointer")
 		typ = typ.Elem()
 	}
-
 
 }

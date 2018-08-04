@@ -5,13 +5,14 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
-	"go/build"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"text/template"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -23,21 +24,22 @@ func Reflect(importPath string, symbols []string) (*Package, error) {
 	if err != nil {
 		return nil, err
 	}
+	//fmt.Printf("PROGRAMM \n%s\n----------\n", string(program))
 
-	wd, _ := os.Getwd()
+	//wd, _ := os.Getwd()
 
-	// Try to run the program in the same directory as the input package.
-	if p, err := build.Import(importPath, wd, build.FindOnly); err == nil {
-		dir := p.Dir
-		if p, err := buildAndRun(program, dir); err == nil {
-			return p, nil
-		}
-	}
-
-	// Since that didn't work, try to run it in the current working directory.
-	if p, err := buildAndRun(program, wd); err == nil {
-		return p, nil
-	}
+	//// Try to run the program in the same directory as the input package.
+	//if p, err := build.Import(importPath, wd, build.FindOnly); err == nil {
+	//	dir := p.Dir
+	//	if p, err := buildAndRun(program, dir); err == nil {
+	//		return p, nil
+	//	}
+	//}
+	//
+	//// Since that didn't work, try to run it in the current working directory.
+	//if p, err := buildAndRun(program, wd); err == nil {
+	//	return p, nil
+	//}
 
 	// Since that didn't work, try to run it in a standard temp directory.
 	return buildAndRun(program, "")
@@ -62,17 +64,17 @@ func run(program string) (*Package, error) {
 
 	f, err = os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to open file %s", filename)
 	}
 
 	// Process output.
 	var pkg Package
 	if err := gob.NewDecoder(f).Decode(&pkg); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to decode pkg")
 	}
 
 	if err := f.Close(); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to close file")
 	}
 
 	return &pkg, nil
@@ -82,7 +84,7 @@ func buildAndRun(program []byte, dir string) (*Package, error) {
 	// We use TempDir instead of TempFile so we can control the filename.
 	tmpDir, err := ioutil.TempDir(dir, "sal_reflect_")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create tmp dir: %s", err)
 	}
 	defer func() { os.RemoveAll(tmpDir) }()
 	const progSource = "prog.go"
@@ -109,7 +111,7 @@ func buildAndRun(program []byte, dir string) (*Package, error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to run cmd %v: %s", cmdArgs, err)
 	}
 	return run(filepath.Join(tmpDir, progBinary))
 }

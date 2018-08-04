@@ -95,8 +95,6 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("return nil")
 	g.p("}")
 
-	// func (s *salStoreClient) CreateAuthor(ctx context.Context, req *bookstore.CreateAuthorReq) (*bookstore.CreateAuthorResp, error) {
-
 	return nil
 }
 

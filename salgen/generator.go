@@ -81,7 +81,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("")
 
 	inArgs := make(prmArgs, 0, 2)
-	inArgs = append(inArgs, "ctx context.Context")
+	inArgs = append(inArgs, "ctx "+mtd.In[0].String())
 	inArgs = append(inArgs, "req "+mtd.In[1].String())
 
 	// todo: array type

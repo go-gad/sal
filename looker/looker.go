@@ -40,12 +40,12 @@ func LookAtInterface(typ reflect.Type) *Interface {
 }
 
 func LookAtFuncParameters(mt reflect.Type) (Parameters, Parameters) {
-	var in = make([]*ParameterStruct, 0)
+	var in = make(Parameters, 0)
 	for i := 0; i < mt.NumIn(); i++ {
 		in = append(in, LookAtParameter(mt.In(i)))
 	}
 
-	var out = make([]*ParameterStruct, 0)
+	var out = make(Parameters, 0)
 	for i := 0; i < mt.NumOut(); i++ {
 		out = append(out, LookAtParameter(mt.Out(i)))
 	}
@@ -109,12 +109,27 @@ type Method struct {
 
 type Methods []*Method
 
+const (
+	ParameterTypeStruct = "struct"
+)
+
+type Parameter interface {
+	Type() string
+	String() string
+}
+
+type Parameters []Parameter
+
 type ParameterStruct struct {
 	ImportPath string
 	BaseType   string
 	UserType   string
 	Pointer    bool
 	Fields     Fields
+}
+
+func (prm *ParameterStruct) Type() string {
+	return ParameterTypeStruct
 }
 
 func (prm *ParameterStruct) PkgAlias() string {
@@ -141,8 +156,6 @@ type Field struct {
 }
 
 type Fields []*Field
-
-type Parameters []*ParameterStruct
 
 func p(kv ...interface{}) {
 	log.Print(kv...)

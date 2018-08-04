@@ -40,12 +40,12 @@ func LookAtInterface(typ reflect.Type) *Interface {
 }
 
 func LookAtFuncParameters(mt reflect.Type) (Parameters, Parameters) {
-	var in = make([]*Parameter, 0)
+	var in = make([]*ParameterStruct, 0)
 	for i := 0; i < mt.NumIn(); i++ {
 		in = append(in, LookAtParameter(mt.In(i)))
 	}
 
-	var out = make([]*Parameter, 0)
+	var out = make([]*ParameterStruct, 0)
 	for i := 0; i < mt.NumOut(); i++ {
 		out = append(out, LookAtParameter(mt.Out(i)))
 	}
@@ -53,13 +53,13 @@ func LookAtFuncParameters(mt reflect.Type) (Parameters, Parameters) {
 	return in, out
 }
 
-func LookAtParameter(at reflect.Type) *Parameter {
+func LookAtParameter(at reflect.Type) *ParameterStruct {
 	var pointer bool
 	if at.Kind() == reflect.Ptr {
 		at = at.Elem()
 		pointer = true
 	}
-	prm := Parameter{
+	prm := ParameterStruct{
 		ImportPath: at.PkgPath(),
 		BaseType:   at.Kind().String(),
 		UserType:   at.Name(),
@@ -109,7 +109,7 @@ type Method struct {
 
 type Methods []*Method
 
-type Parameter struct {
+type ParameterStruct struct {
 	ImportPath string
 	BaseType   string
 	UserType   string
@@ -117,18 +117,18 @@ type Parameter struct {
 	Fields     Fields
 }
 
-func (prm *Parameter) PkgAlias() string {
+func (prm *ParameterStruct) PkgAlias() string {
 	return path.Base(prm.ImportPath)
 }
 
-func (prm *Parameter) PtrPrefix() string {
+func (prm *ParameterStruct) PtrPrefix() string {
 	if prm.Pointer {
 		return "*"
 	}
 	return ""
 }
 
-func (prm *Parameter) String() string {
+func (prm *ParameterStruct) String() string {
 	return prm.PtrPrefix() + prm.PkgAlias() + "." + prm.UserType
 }
 
@@ -142,7 +142,7 @@ type Field struct {
 
 type Fields []*Field
 
-type Parameters []*Parameter
+type Parameters []*ParameterStruct
 
 func p(kv ...interface{}) {
 	log.Print(kv...)

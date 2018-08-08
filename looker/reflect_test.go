@@ -21,21 +21,21 @@ func TestReflect(t *testing.T) {
 			pf("\t[%d] method %q", i, v.Name)
 			for _, prm := range v.In {
 				pf("\t\tparam IN %#v", prm)
-				if prm.Type() == looker.ParameterTypeStruct {
-					sprm := prm.(*looker.ParameterStruct)
-					for _, f := range sprm.Fields {
-						pf("\t\t\tfield %#v", f)
-					}
-				}
+				//if prm.Type() == looker.ParameterTypeStruct {
+				//	sprm := prm.(*looker.ParameterStruct)
+				//	for _, f := range sprm.Fields {
+				//		pf("\t\t\tfield %#v", f)
+				//	}
+				//}
 			}
 			for _, prm := range v.Out {
 				pf("\t\tparam OUT %#v", prm)
-				if prm.Type() == looker.ParameterTypeStruct {
-					sprm := prm.(*looker.ParameterStruct)
-					for _, f := range sprm.Fields {
-						pf("\t\t\tfield %#v", f)
-					}
-				}
+				//if prm.Type() == looker.ParameterTypeStruct {
+				//	sprm := prm.(*looker.ParameterStruct)
+				//	for _, f := range sprm.Fields {
+				//		pf("\t\t\tfield %#v", f)
+				//	}
+				//}
 			}
 		}
 	}

@@ -39,13 +39,13 @@ func LookAtInterface(typ reflect.Type) *Interface {
 	return intf
 }
 
-func LookAtFuncParameters(mt reflect.Type) (Parameters, Parameters) {
-	var in = make(Parameters, 0)
+func LookAtFuncParameters(mt reflect.Type) ([]*ParameterStruct, []*ParameterStruct) {
+	var in = make([]*ParameterStruct, 0)
 	for i := 0; i < mt.NumIn(); i++ {
 		in = append(in, LookAtParameter(mt.In(i)))
 	}
 
-	var out = make(Parameters, 0)
+	var out = make([]*ParameterStruct, 0)
 	for i := 0; i < mt.NumOut(); i++ {
 		out = append(out, LookAtParameter(mt.Out(i)))
 	}
@@ -103,8 +103,8 @@ type Interfaces []*Interface
 
 type Method struct {
 	Name string
-	In   Parameters
-	Out  Parameters
+	In   []*ParameterStruct
+	Out  []*ParameterStruct
 }
 
 type Methods []*Method

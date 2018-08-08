@@ -48,6 +48,9 @@ func Reflect(importPath string, symbols []string) (*Package, error) {
 // run the given program and parse the output as a model.Package.
 func run(program string) (*Package, error) {
 	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create temp file")
+	}
 	filename := f.Name()
 	defer os.Remove(filename)
 	if err := f.Close(); err != nil {
@@ -66,6 +69,10 @@ func run(program string) (*Package, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to open file %s", filename)
 	}
+	//
+	//b, _ := ioutil.ReadFile(filename)
+	////fmt.Printf("fff\n%s", string(b))
+	//bb := bytes.NewBuffer(b)
 
 	// Process output.
 	var pkg Package

@@ -32,18 +32,22 @@ func TestEncodeGob(t *testing.T) {
 	if err := f.Close(); err != nil {
 		t.Fatal(err)
 	}
-	pkg := &looker.Package{ImportPath: looker.ImportElement{Path: "some/path"}}
+	pkg, err := looker.Reflect("github.com/go-gad/sal/examples/bookstore1", []string{"StoreClient"})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if err := looker.EncodeGob(filename, pkg); err != nil {
 		t.Fatal(err)
 	}
 
 	fb, _ := ioutil.ReadFile(filename)
-	//t.Logf("File content:\n%s", string(fb))
+	t.Logf("File content:\n%s", string(fb))
 
 	gb := bytes.NewBuffer(fb)
 	var pkgD looker.Package
 	if err := gob.NewDecoder(gb).Decode(&pkgD); err != nil {
 		t.Fatal(err)
 	}
+	t.Logf("Package %# v", pretty.Formatter(pkg))
 }

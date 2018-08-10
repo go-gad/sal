@@ -23,6 +23,11 @@ func TestLookAtInterface(t *testing.T) {
 	var typ reflect.Type = reflect.TypeOf((*pkg_.StoreClient)(nil)).Elem()
 	intf := looker.LookAtInterface(typ)
 	t.Logf("Interface %# v", pretty.Formatter(intf))
+	for _, m := range intf.Methods {
+		for _, prm := range m.In {
+			t.Logf("parameter kind: %s str: %s", prm.Kind().String(), prm.String())
+		}
+	}
 }
 
 type Req1 struct {

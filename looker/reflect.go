@@ -76,6 +76,10 @@ func run(program string) (*Package, error) {
 
 	// Process output.
 	var pkg Package
+	gob.Register(&StructElement{})
+	//gob.Register(Parameters{})
+	//gob.Register(Field{})
+	//gob.Register(Fields{})
 	if err := gob.NewDecoder(f).Decode(&pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to decode pkg")
 	}
@@ -154,6 +158,11 @@ func EncodeGob(output string, pkg *Package) error {
 			}
 		}()
 	}
+
+	gob.Register(&StructElement{})
+	//gob.Register(Parameters{})
+	//gob.Register(Field{})
+	//gob.Register(Fields{})
 
 	if err := gob.NewEncoder(outfile).Encode(pkg); err != nil {
 		fmt.Errorf("gob encode: %s", err)

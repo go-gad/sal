@@ -5,10 +5,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-gad/sal/looker"
-	"github.com/kr/pretty"
 	"bytes"
 	"encoding/gob"
+
+	"github.com/go-gad/sal/looker"
+	"github.com/kr/pretty"
 )
 
 func TestReflect(t *testing.T) {
@@ -16,8 +17,8 @@ func TestReflect(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pf := getLogger(t)
-	pf("Package %# v", pretty.Formatter(pkg))
+
+	t.Logf("Package %# v", pretty.Formatter(pkg))
 }
 
 func TestEncodeGob(t *testing.T) {
@@ -31,7 +32,7 @@ func TestEncodeGob(t *testing.T) {
 	if err := f.Close(); err != nil {
 		t.Fatal(err)
 	}
-	pkg := &looker.Package{ImportPath: looker.ImportElement{Path:"some/path"}}
+	pkg := &looker.Package{ImportPath: looker.ImportElement{Path: "some/path"}}
 
 	if err := looker.EncodeGob(filename, pkg); err != nil {
 		t.Fatal(err)

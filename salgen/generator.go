@@ -28,6 +28,8 @@ func (g *generator) Generate(pkg *looker.Package, pkgName string) error {
 	g.p("%q", "context")
 	g.p("%q", pkg.ImportPath.Path)
 	g.p("%q", "github.com/pkg/errors")
+	g.p("%q", "github.com/go-gad/sal")
+	g.p("%q", "database/sql")
 	g.p(")")
 
 	for _, intf := range pkg.Interfaces {
@@ -86,7 +88,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	for _, field := range req.Fields() {
 		g.p("reqMap[%q] = &req.%s", field.Name, field.Name)
 	}
-	g.p("pgQuery, args := processQueryAndArgs(req.Query(), reqMap)")
+	g.p("pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)")
 	g.br()
 
 	g.p("rows, err := s.DB.Query(pgQuery, args...)")

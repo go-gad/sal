@@ -7,6 +7,8 @@ import (
 
 	"github.com/go-gad/sal/looker"
 	"github.com/kr/pretty"
+	"bytes"
+	"encoding/gob"
 )
 
 func TestReflect(t *testing.T) {
@@ -24,7 +26,7 @@ func TestEncodeGob(t *testing.T) {
 		t.Fatal(err)
 	}
 	filename := f.Name()
-	t.Log("filename ", filename)
+	//t.Log("filename ", filename)
 	defer os.Remove(filename)
 	if err := f.Close(); err != nil {
 		t.Fatal(err)
@@ -36,5 +38,11 @@ func TestEncodeGob(t *testing.T) {
 	}
 
 	fb, _ := ioutil.ReadFile(filename)
-	t.Logf("File content:\n%s", string(fb))
+	//t.Logf("File content:\n%s", string(fb))
+
+	gb := bytes.NewBuffer(fb)
+	var pkgD looker.Package
+	if err := gob.NewDecoder(gb).Decode(&pkgD); err != nil {
+		t.Fatal(err)
+	}
 }

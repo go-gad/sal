@@ -8,7 +8,7 @@ import (
 
 func LookAtInterfaces(pkgPath string, is []reflect.Type) *Package {
 	pkg := Package{
-		ImportPath: pkgPath,
+		ImportPath: ImportElement{Path:pkgPath},
 		Interfaces: make(Interfaces, 0, len(is)),
 	}
 	for _, it := range is {
@@ -90,8 +90,24 @@ func LookAtFields(st reflect.Type) Fields {
 }
 
 type Package struct {
-	ImportPath string
+	ImportPath ImportElement
 	Interfaces Interfaces
+}
+
+// ImportElement represents the imported package.
+// Attribute `Alias` represents the optional alias for the package.
+//		import foo "github.com/fooooo/baaaar-pppkkkkggg"
+type ImportElement struct {
+	Path string
+	Alias string
+}
+
+func (ie ImportElement) Name() string {
+	if ie.Alias != "" {
+		return ie.Alias
+	}
+
+	return path.Base(ie.Path)
 }
 
 type Interface struct {

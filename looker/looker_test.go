@@ -10,13 +10,13 @@ import (
 )
 
 func TestLookAtInterfaces(t *testing.T) {
-	pf := getLogger(t)
 	pkgPath := "github.com/go-gad/sal/examples/bookstore1"
 	var list = []reflect.Type{
 		reflect.TypeOf((*pkg_.StoreClient)(nil)).Elem(),
 	}
 	pkg := looker.LookAtInterfaces(pkgPath, list)
-	pf("package %# v", pretty.Formatter(pkg))
+
+	t.Logf("package %# v", pretty.Formatter(pkg))
 }
 
 func TestLookAtInterface(t *testing.T) {

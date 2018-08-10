@@ -76,7 +76,7 @@ type Methods []*Method
 
 type Parameter interface {
 	Kind() reflect.Kind
-	String() string
+	Name() string
 	Fields() Fields
 	Pointer() bool
 }
@@ -109,15 +109,8 @@ func (prm *StructElement) Kind() reflect.Kind {
 	return reflect.Struct
 }
 
-func (prm *StructElement) PtrPrefix() string {
-	if prm.Pointer() {
-		return "*"
-	}
-	return ""
-}
-
-func (prm *StructElement) String() string {
-	return prm.PtrPrefix() + prm.ImportPath.Name() + "." + prm.UserType
+func (prm *StructElement) Name() string {
+	return prm.ImportPath.Name() + "." + prm.UserType
 }
 
 func (prm *StructElement) Fields() Fields {

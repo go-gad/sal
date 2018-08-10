@@ -56,3 +56,14 @@ func addSegment(inrune, segment []rune) []rune {
 func UnderscoreToCamelCase(s string) string {
 	return strings.Replace(strings.Title(strings.Replace(strings.ToLower(s), "_", " ", -1)), " ", "", -1)
 }
+
+type KeysIntf map[string]interface{}
+
+func ProcessQueryAndArgs(query string, reqMap KeysIntf) (string, []interface{}) {
+	pgQuery, argsNames := QueryArgs(query)
+	var args = make([]interface{}, 0, len(argsNames))
+	for _, name := range argsNames {
+		args = append(args, reqMap[name])
+	}
+	return pgQuery, args
+}

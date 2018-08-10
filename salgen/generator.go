@@ -41,6 +41,7 @@ func (g *generator) Generate(pkg *looker.Package, pkgName string) error {
 	g.p("import (")
 	g.p("%q", "context")
 	g.p("%q", pkg.ImportPath.Path)
+	g.p("%q", "github.com/pkg/errors")
 	g.p(")")
 
 	for _, intf := range pkg.Interfaces {
@@ -82,20 +83,64 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 
 	inArgs := make(prmArgs, 0, 2)
 	inArgs = append(inArgs, "ctx "+mtd.In[0].String())
-	inArgs = append(inArgs, "req "+mtd.In[1].String())
+	req := mtd.In[1]
+	inArgs = append(inArgs, "req "+req.String())
 
 	// todo: array type
 	outArgs := make(prmArgs, 0, 2)
-	if len(mtd.Out) == 2 {
-		outArgs = append(outArgs, mtd.Out[0].String())
-	}
+
+	resp := mtd.Out[0]
+	outArgs = append(outArgs, resp.String())
+
 	outArgs = append(outArgs, "error")
 
 	g.p("func (s *%v) %v(%v) (%v) {", implName, mtd.Name, inArgs.String(), outArgs.String())
-	g.p("return nil")
+	g.p("var reqMap = make(sal.KeysIntf)")
+	//fmt.Printf("%# v", pretty.Formatter(req))
+	for _, field := range req.Fields() {
+		g.p("reqMap[%q] = &req.%s", field.Name, field.Name)
+	}
+	g.p("pgQuery, args := processQueryAndArgs(req.Query(), reqMap)")
+
+	g.p("rows, err := s.DB.Query(pgQuery, args...)")
+	g.ifErr("failed to execute Query")
+	g.p("defer rows.Close()")
+	g.p("cols, err := rows.Columns()")
+	g.ifErr("failed to fetch columns")
+
+	g.p("if !rows.Next() {")
+	g.p("if err := rows.Err(); err != nil {")
+	g.p("return nil, errors.Wrap(err, %q)", "rows error")
+	g.p("}")
+	g.p("return nil, sql.ErrNoRows")
+	g.p("}")
+
+	g.p("var resp %s", resp.String())
+	g.p("var mm = make(sal.KeysIntf)")
+	for _, field := range resp.Fields() {
+		g.p("mm[%q] = &resp.%s", field.Name, field.Name)
+	}
+	g.p("var dest = make([]interface{}, 0, len(mm))")
+	g.p("for _, v := range cols {")
+	g.p("if intr, ok := mm[v]; ok {")
+	g.p("dest = append(dest, intr)")
+	g.p("}")
+	g.p("}")
+
+	g.p("if err = rows.Scan(dest...); err != nil {")
+	g.p("return nil, errors.Wrap(err, %q)", "failed to scan row")
+	g.p("}")
+
+	g.p("return &resp, nil")
 	g.p("}")
 
 	return nil
+}
+
+func (g *generator) ifErr(msg string) {
+	g.p("if err != nil {")
+	g.p("return nil, errors.Wrap(err, %q)", msg)
+	g.p("}")
 }
 
 // Output returns the generator's output, formatted in the standard Go style.

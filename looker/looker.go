@@ -77,6 +77,8 @@ type Methods []*Method
 type Parameter interface {
 	Kind() reflect.Kind
 	String() string
+	Fields() Fields
+	Pointer() bool
 }
 
 type Parameters []Parameter
@@ -99,8 +101,8 @@ type StructElement struct {
 	ImportPath ImportElement
 	BaseType   reflect.Kind
 	UserType   string
-	Pointer    bool
-	Fields     Fields
+	IsPointer  bool
+	AllFields  Fields
 }
 
 func (prm *StructElement) Kind() reflect.Kind {
@@ -108,7 +110,7 @@ func (prm *StructElement) Kind() reflect.Kind {
 }
 
 func (prm *StructElement) PtrPrefix() string {
-	if prm.Pointer {
+	if prm.Pointer() {
 		return "*"
 	}
 	return ""
@@ -116,6 +118,14 @@ func (prm *StructElement) PtrPrefix() string {
 
 func (prm *StructElement) String() string {
 	return prm.PtrPrefix() + prm.ImportPath.Name() + "." + prm.UserType
+}
+
+func (prm *StructElement) Fields() Fields {
+	return prm.AllFields
+}
+
+func (prm *StructElement) Pointer() bool {
+	return prm.IsPointer
 }
 
 func LookAtParameter(at reflect.Type) *StructElement {
@@ -128,11 +138,11 @@ func LookAtParameter(at reflect.Type) *StructElement {
 		ImportPath: ImportElement{Path: at.PkgPath()},
 		BaseType:   at.Kind(),
 		UserType:   at.Name(),
-		Pointer:    pointer,
+		IsPointer:  pointer,
 	}
 
 	if prm.BaseType == reflect.Struct {
-		prm.Fields = LookAtFields(at)
+		prm.AllFields = LookAtFields(at)
 	}
 
 	return &prm

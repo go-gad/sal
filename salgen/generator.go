@@ -40,7 +40,7 @@ func (g *generator) Generate(pkg *looker.Package, pkgName string) error {
 
 	g.p("import (")
 	g.p("%q", "context")
-	g.p("%q", pkg.ImportPath)
+	g.p("%q", pkg.ImportPath.Path)
 	g.p(")")
 
 	for _, intf := range pkg.Interfaces {

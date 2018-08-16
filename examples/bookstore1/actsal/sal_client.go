@@ -16,6 +16,7 @@ type SalStoreClient struct {
 func NewStoreClient(db *sql.DB) *SalStoreClient {
 	return &SalStoreClient{DB: db}
 }
+
 func (s *SalStoreClient) CreateAuthor(ctx context.Context, req bookstore1.CreateAuthorReq) (*bookstore1.CreateAuthorResp, error) {
 	var reqMap = make(sal.KeysIntf)
 	reqMap["Name"] = &req.Name

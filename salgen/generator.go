@@ -50,6 +50,7 @@ func (g *generator) GenerateInterface(intf *looker.Interface) error {
 	g.p("func New%v(db *sql.DB) *%v {", intf.Name, implName)
 	g.p("return &%v{DB: db}", implName)
 	g.p("}")
+	g.br()
 
 	for _, mtd := range intf.Methods {
 		if err := g.GenerateMethod(implName, mtd); err != nil {

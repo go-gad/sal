@@ -16,7 +16,7 @@ type CreateAuthorReq struct {
 }
 
 func (cr *CreateAuthorReq) Query() string {
-	return `INSERT INTO authors (name, desc, created_at) VALUES(@Name, @Desc, now()) RETURNING ID, CreatedAt`
+	return `INSERT INTO authors (Name, Desc, CreatedAt) VALUES(@Name, @Desc, now()) RETURNING ID, CreatedAt`
 }
 
 type CreateAuthorResp struct {

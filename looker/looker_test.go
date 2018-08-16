@@ -25,7 +25,7 @@ func TestLookAtInterface(t *testing.T) {
 	t.Logf("Interface %# v", pretty.Formatter(intf))
 	for _, m := range intf.Methods {
 		for _, prm := range m.In {
-			t.Logf("parameter kind: %s str: %s", prm.Kind().String(), prm.String())
+			t.Logf("parameter kind: %s str: %s", prm.Kind().String(), prm.Name())
 		}
 	}
 }

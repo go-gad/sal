@@ -7,7 +7,7 @@ import (
 	"unicode"
 )
 
-var reQueryArgs = regexp.MustCompile("@[a-z]+")
+var reQueryArgs = regexp.MustCompile("@[A-Za-z0-9_]+")
 
 // QueryArgs receives the query with named arguments
 // and returns a query with posgtresql placeholders and a ordered slice named args.

@@ -16,7 +16,6 @@ type SalStoreClient struct {
 func NewStoreClient(db *sql.DB) *SalStoreClient {
 	return &SalStoreClient{DB: db}
 }
-
 func (s *SalStoreClient) CreateAuthor(ctx context.Context, req bookstore1.CreateAuthorReq) (*bookstore1.CreateAuthorResp, error) {
 	var reqMap = make(sal.KeysIntf)
 	reqMap["Name"] = &req.Name
@@ -43,7 +42,7 @@ func (s *SalStoreClient) CreateAuthor(ctx context.Context, req bookstore1.Create
 
 	var resp bookstore1.CreateAuthorResp
 	var mm = make(sal.KeysIntf)
-	mm["Id"] = &resp.Id
+	mm["ID"] = &resp.ID
 	mm["CreatedAt"] = &resp.CreatedAt
 	var dest = make([]interface{}, 0, len(mm))
 	for _, v := range cols {

@@ -1,22 +1,18 @@
 package main
 
 import (
-	"log"
+	"io/ioutil"
 	"testing"
-
-	"github.com/go-gad/sal/looker"
 )
 
-func TestGenerator_Generate(t *testing.T) {
-	pkg, err := looker.Reflect("github.com/go-gad/sal/examples/bookstore1", []string{"StoreClient"})
+func TestGenerateCode(t *testing.T) {
+	code, err := GenerateCode("actsal", "github.com/go-gad/sal/examples/bookstore1", []string{"StoreClient"})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Failed to generate a code: %+v", err)
 	}
-	g := new(generator)
-	if err := g.Generate(pkg, "actsal"); err != nil {
-		log.Fatalf("Failed generating mock: %v", err)
-	}
-	var fbody = g.Output()
-	t.Logf("\n%s", string(fbody))
 
+	t.Logf("\n%s", string(code))
+	if err = ioutil.WriteFile("../examples/bookstore1/actsal/sal_client.go", code, 0666); err != nil {
+		t.Fatalf("failed to write file: %+v", err)
+	}
 }

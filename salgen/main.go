@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-gad/sal/looker"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -20,11 +21,10 @@ func main() {
 	if flag.NArg() != 2 {
 		log.Fatal("Expected exactly two arguments")
 	}
-	pkg, err := looker.Reflect(flag.Arg(0), strings.Split(flag.Arg(1), ","))
-
-	if err != nil {
-		log.Fatalf("Loading input failed: %v", err)
-	}
+	var (
+		srcpkg  = flag.Arg(0)
+		symbols = strings.Split(flag.Arg(1), ",")
+	)
 
 	dst := os.Stdout
 	if len(*destination) > 0 {
@@ -36,13 +36,28 @@ func main() {
 		dst = f
 	}
 
-	g := new(generator)
-
-	if err := g.Generate(pkg, *packageName); err != nil {
-		log.Fatalf("Failed generating mock: %v", err)
+	code, err := GenerateCode(*packageName, srcpkg, symbols)
+	if err != nil {
+		log.Fatalf("Failed to generate a code: %+v", err)
 	}
-	if _, err := dst.Write(g.Output()); err != nil {
+
+	if _, err := dst.Write(code); err != nil {
 		log.Fatalf("Failed writing to destination: %v", err)
 	}
 
+}
+
+func GenerateCode(pkgname string, srcpkg string, symbols []string) ([]byte, error) {
+	pkg, err := looker.Reflect(srcpkg, symbols)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to reflect package")
+	}
+
+	g := new(generator)
+
+	if err := g.Generate(pkg, pkgname); err != nil {
+		return nil, errors.Wrap(err, "failed generating mock")
+	}
+
+	return g.Output(), nil
 }

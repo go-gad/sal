@@ -16,10 +16,10 @@ type CreateAuthorReq struct {
 }
 
 func (cr *CreateAuthorReq) Query() string {
-	return `INSERT INTO authors (name, desc, created_at) VALUES(@name, @desc, now()) RETURNING id, created_at`
+	return `INSERT INTO authors (name, desc, created_at) VALUES(@Name, @Desc, now()) RETURNING ID, CreatedAt`
 }
 
 type CreateAuthorResp struct {
-	Id        int64
+	ID        int64
 	CreatedAt time.Time
 }

@@ -46,7 +46,7 @@ Put `go generate` instruction for your interface:
 
 - flag `destination` describes the output file.
 - flag `package` describes the package of the generated code.
-– first argument describes the import path of package that contains the interfaces.
+- first argument describes the import path of package that contains the interfaces.
 - second argument describes the list of interfaces that should be used to generate clients.
 
 Run `go generate ./...`. Your client based on interface would be generated. You can used it like:

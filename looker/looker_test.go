@@ -24,11 +24,6 @@ func TestLookAtInterface(t *testing.T) {
 	var typ reflect.Type = reflect.TypeOf((*pkg_.StoreClient)(nil)).Elem()
 	intf := looker.LookAtInterface(typ)
 	t.Logf("Interface %# v", pretty.Formatter(intf))
-	for _, m := range intf.Methods {
-		for _, prm := range m.In {
-			t.Logf("parameter kind: %s str: %s", prm.Kind().String(), prm.Name())
-		}
-	}
 }
 
 func TestLookAtParameter(t *testing.T) {
@@ -43,18 +38,32 @@ func TestLookAtParameter(t *testing.T) {
 }
 
 func TestLookAtParameter2(t *testing.T) {
+	tf := reflect.TypeOf(testdata.Foo)
+
 	for _, tc := range []struct {
 		typ reflect.Type
 	}{
 		{reflect.TypeOf(testdata.Req1{})},
-		{reflect.TypeOf(&testdata.Req1{})},
 		{reflect.TypeOf(testdata.List1{})},
+		{reflect.TypeOf([]*testdata.Req1{})},
+		{tf.In(0)},
 	} {
 		t.Logf("––––")
 		t.Logf("kind[base type] %q", tc.typ.Kind().String())
 		t.Logf("string %q", tc.typ.String())
 		t.Logf("name %q", tc.typ.Name())
 		t.Logf("pkgpath %q", tc.typ.PkgPath())
+		if tc.typ.Kind() == reflect.Slice {
+			t.Log(">>>")
+			el := tc.typ.Elem()
+			if el.Kind() == reflect.Ptr {
+				el = el.Elem()
+			}
+			t.Logf("\tkind[base type] %q", el.Kind().String())
+			t.Logf("\tstring %q", el.String())
+			t.Logf("\tname %q", el.Name())
+			t.Logf("\tpkgpath %q", el.PkgPath())
+		}
 
 	}
 

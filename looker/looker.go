@@ -75,7 +75,7 @@ type Method struct {
 type Methods []*Method
 
 type Parameter interface {
-	Kind() reflect.Kind
+	Kind() string
 	Name() string
 	Pointer() bool
 }
@@ -96,16 +96,17 @@ func LookAtFuncParameters(mt reflect.Type) (Parameters, Parameters) {
 	return in, out
 }
 
+// Use exported fields because god.Encoder
 type StructElement struct {
 	ImportPath ImportElement
-	BaseType   reflect.Kind
+	BaseType   string
 	UserType   string
 	IsPointer  bool
-	AllFields  Fields
+	Fields     Fields
 }
 
-func (prm *StructElement) Kind() reflect.Kind {
-	return reflect.Struct
+func (prm *StructElement) Kind() string {
+	return reflect.Struct.String()
 }
 
 func (prm *StructElement) Name() string {
@@ -114,6 +115,13 @@ func (prm *StructElement) Name() string {
 
 func (prm *StructElement) Pointer() bool {
 	return prm.IsPointer
+}
+
+type ArrayElement struct {
+	ImportPath ImportElement
+	BaseType   string
+	Item       StructElement
+	pointer    bool
 }
 
 func LookAtParameter(at reflect.Type) *StructElement {
@@ -125,14 +133,15 @@ func LookAtParameter(at reflect.Type) *StructElement {
 
 	prm := StructElement{
 		ImportPath: ImportElement{Path: at.PkgPath()},
-		BaseType:   at.Kind(),
+		BaseType:   at.Kind().String(),
 		UserType:   at.Name(),
 		IsPointer:  pointer,
 	}
 
-	if prm.BaseType == reflect.Struct {
-		prm.AllFields = LookAtFields(at)
+	if prm.BaseType == reflect.Struct.String() {
+		prm.Fields = LookAtFields(at)
 	}
+	//fmt.Printf("struct element %# v", pretty.Formatter(prm))
 
 	return &prm
 }

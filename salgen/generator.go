@@ -86,9 +86,9 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("func (s *%v) %v(%v) (%v) {", implName, mtd.Name, inArgs.String(), outArgs.String())
 	g.p("var reqMap = make(sal.KeysIntf)")
 
-	if req.Kind() == reflect.Struct {
+	if req.Kind() == reflect.Struct.String() {
 		reqSt := req.(*looker.StructElement)
-		for _, field := range reqSt.AllFields {
+		for _, field := range reqSt.Fields {
 			g.p("reqMap[%q] = &req.%s", field.Name, field.Name)
 		}
 	} else {
@@ -117,9 +117,9 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 
 	g.p("var resp %s", resp.Name())
 	g.p("var mm = make(sal.KeysIntf)")
-	if resp.Kind() == reflect.Struct {
+	if resp.Kind() == reflect.Struct.String() {
 		respSt := resp.(*looker.StructElement)
-		for _, field := range respSt.AllFields {
+		for _, field := range respSt.Fields {
 			g.p("mm[%q] = &resp.%s", field.Name, field.Name)
 		}
 	}
@@ -137,6 +137,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.br()
 
 	respStr := "resp"
+	//fmt.Printf("struct element %# v", pretty.Formatter(resp))
 	if resp.Pointer() {
 		respStr = "&resp"
 	}

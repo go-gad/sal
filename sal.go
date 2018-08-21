@@ -32,3 +32,7 @@ func ProcessQueryAndArgs(query string, reqMap ArgsMap) (string, []interface{}) {
 	}
 	return pgQuery, args
 }
+
+type ProcessArgser interface {
+	ProcessArgs(reqMap ArgsMap)
+}

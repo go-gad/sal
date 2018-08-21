@@ -44,12 +44,12 @@ func TestSalStoreClient_GetAuthors(t *testing.T) {
 		&bookstore1.GetAuthorsResp{ID: 30, Name: "Max", Desc: "d3", CreatedAt: time.Now().Truncate(time.Millisecond)},
 	}
 
-	rows := sqlmock.NewRows([]string{"ID", "Name", "Desc", "CreatedAt"})
+	rows := sqlmock.NewRows([]string{"id", "name", "desc", "created_at"})
 	for _, v := range expResp {
 		rows = rows.AddRow(v.ID, v.Name, v.Desc, v.CreatedAt)
 	}
 
-	mock.ExpectQuery(`SELECT ID, CreatedAt, Name,.+`).WithArgs(req.ID).WillReturnRows(rows)
+	mock.ExpectQuery(`SELECT id, created_at, name,.+`).WithArgs(req.ID).WillReturnRows(rows)
 
 	resp, err := client.GetAuthors(context.Background(), req)
 	assert.Equal(t, expResp, resp)

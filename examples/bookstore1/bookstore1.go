@@ -27,18 +27,18 @@ type CreateAuthorResp struct {
 }
 
 type GetAuthorsReq struct {
-	ID int64
+	ID int64 `sql:"id"`
 }
 
 func (r *GetAuthorsReq) Query() string {
-	return `SELECT ID, CreatedAt, Name, Desc FROM authors WHERE ID>@ID`
+	return `SELECT id, created_at, name, desc FROM authors WHERE id>@id`
 }
 
 type GetAuthorsResp struct {
-	ID        int64
-	CreatedAt time.Time
-	Name      string
-	Desc      string
+	ID        int64     `sql:"id"`
+	CreatedAt time.Time `sql:"created_at"`
+	Name      string    `sql:"name"`
+	Desc      string    `sql:"desc"`
 }
 
 type UpdateAuthorReq struct {

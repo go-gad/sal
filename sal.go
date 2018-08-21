@@ -22,7 +22,9 @@ func QueryArgs(query string) (string, []string) {
 
 type KeysIntf map[string]interface{}
 
-func ProcessQueryAndArgs(query string, reqMap KeysIntf) (string, []interface{}) {
+type ArgsMap map[string]interface{}
+
+func ProcessQueryAndArgs(query string, reqMap ArgsMap) (string, []interface{}) {
 	pgQuery, argsNames := QueryArgs(query)
 	var args = make([]interface{}, 0, len(argsNames))
 	for _, name := range argsNames {

@@ -96,7 +96,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	outArgs = append(outArgs, mtd.Out[len(mtd.Out)-1].Name())
 
 	g.p("func (s *%v) %v(%v) (%v) {", implName, mtd.Name, inArgs.String(), outArgs.String())
-	g.p("var reqMap = make(sal.KeysIntf)")
+	g.p("var reqMap = make(sal.ArgsMap)")
 
 	if req.Kind() == reflect.Struct.String() {
 		reqSt := req.(*looker.StructElement)

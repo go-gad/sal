@@ -8,6 +8,7 @@ import (
 	"github.com/go-gad/sal/looker"
 	"github.com/go-gad/sal/looker/testdata"
 	"github.com/kr/pretty"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLookAtInterfaces(t *testing.T) {
@@ -38,35 +39,46 @@ func TestLookAtParameter(t *testing.T) {
 }
 
 func TestLookAtParameter2(t *testing.T) {
-	tf := reflect.TypeOf(testdata.Foo)
-
 	for _, tc := range []struct {
-		typ reflect.Type
+		test string
+		typ  reflect.Type
+		prm  looker.Parameter
+		kind string
+		name string
+		ptr  bool
 	}{
-		{reflect.TypeOf(testdata.Req1{})},
-		{reflect.TypeOf(testdata.List1{})},
-		{reflect.TypeOf([]*testdata.Req1{})},
-		{tf.In(0)},
+		{
+			test: "user struct",
+			typ:  reflect.TypeOf(testdata.Req1{}),
+			prm: &looker.StructElement{
+				ImportPath: looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata"},
+				UserType:   "Req1",
+				IsPointer:  false,
+			},
+			kind: reflect.Struct.String(),
+			name: "testdata.Req1",
+			ptr:  false,
+		}, {
+			test: "slice of user structs",
+			typ:  reflect.TypeOf([]*testdata.Req1{}),
+			prm: &looker.StructElement{
+				ImportPath: looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata"},
+				UserType:   "Req1",
+				IsPointer:  false,
+			},
+			kind: reflect.Slice.String(),
+			name: "[]*testdata.Req1",
+			ptr:  false,
+		},
 	} {
-		t.Logf("––––")
-		t.Logf("kind[base type] %q", tc.typ.Kind().String())
-		t.Logf("string %q", tc.typ.String())
-		t.Logf("name %q", tc.typ.Name())
-		t.Logf("pkgpath %q", tc.typ.PkgPath())
-		if tc.typ.Kind() == reflect.Slice {
-			t.Log(">>>")
-			el := tc.typ.Elem()
-			if el.Kind() == reflect.Ptr {
-				el = el.Elem()
-			}
-			t.Logf("\tkind[base type] %q", el.Kind().String())
-			t.Logf("\tstring %q", el.String())
-			t.Logf("\tname %q", el.Name())
-			t.Logf("\tpkgpath %q", el.PkgPath())
-		}
-
+		t.Run(tc.test, func(t *testing.T) {
+			assert := assert.New(t)
+			prm := looker.LookAtParameter(tc.typ)
+			assert.Equal(tc.kind, prm.Kind())
+			assert.Equal(tc.name, prm.Name())
+			assert.Equal(tc.ptr, prm.Pointer())
+		})
 	}
-
 }
 
 func TestLookAtField(t *testing.T) {

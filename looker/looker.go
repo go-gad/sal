@@ -99,7 +99,6 @@ func LookAtFuncParameters(mt reflect.Type) (Parameters, Parameters) {
 // Use exported fields because god.Encoder
 type StructElement struct {
 	ImportPath ImportElement
-	BaseType   string
 	UserType   string
 	IsPointer  bool
 	Fields     Fields
@@ -117,39 +116,108 @@ func (prm *StructElement) Pointer() bool {
 	return prm.IsPointer
 }
 
-type ArrayElement struct {
+type SliceElement struct {
 	ImportPath ImportElement
-	BaseType   string
-	Item       StructElement
-	pointer    bool
+	UserType   string
+	Item       Parameter
+	IsPointer  bool
 }
 
-func LookAtParameter(at reflect.Type) *StructElement {
+func (prm *SliceElement) Kind() string {
+	return reflect.Slice.String()
+}
+
+func (prm *SliceElement) Name() string {
+	var ptr string
+	if prm.Item.Pointer() {
+		ptr = "*"
+	}
+	return "[]" + ptr + prm.Item.Name()
+}
+
+func (prm *SliceElement) Pointer() bool {
+	return prm.IsPointer
+}
+
+type InterfaceElement struct {
+	ImportPath ImportElement
+	UserType   string
+}
+
+func (prm *InterfaceElement) Kind() string {
+	return reflect.Interface.String()
+}
+
+func (prm *InterfaceElement) Name() string {
+	return prm.ImportPath.Name() + "." + prm.UserType
+}
+
+func (prm *InterfaceElement) Pointer() bool {
+	return false
+}
+
+type UnsupportedElement struct {
+	ImportPath ImportElement
+	UserType   string
+	BaseType   string
+	IsPointer  bool
+}
+
+func (prm *UnsupportedElement) Kind() string {
+	return prm.BaseType
+}
+
+func (prm *UnsupportedElement) Name() string {
+	return prm.ImportPath.Name() + "." + prm.UserType
+}
+
+func (prm *UnsupportedElement) Pointer() bool {
+	return prm.IsPointer
+}
+
+func LookAtParameter(at reflect.Type) Parameter {
 	var pointer bool
 	if at.Kind() == reflect.Ptr {
 		at = at.Elem()
 		pointer = true
 	}
-
-	prm := StructElement{
-		ImportPath: ImportElement{Path: at.PkgPath()},
-		BaseType:   at.Kind().String(),
-		UserType:   at.Name(),
-		IsPointer:  pointer,
+	var prm Parameter
+	switch at.Kind() {
+	case reflect.Struct:
+		prm = &StructElement{
+			ImportPath: ImportElement{Path: at.PkgPath()},
+			UserType:   at.Name(),
+			IsPointer:  pointer,
+			Fields:     LookAtFields(at),
+		}
+	case reflect.Slice:
+		prm = &SliceElement{
+			ImportPath: ImportElement{Path: at.PkgPath()},
+			UserType:   at.Name(),
+			IsPointer:  pointer,
+			Item:       LookAtParameter(at.Elem()),
+		}
+	case reflect.Interface:
+		prm = &InterfaceElement{
+			ImportPath: ImportElement{Path: at.PkgPath()},
+			UserType:   at.Name(),
+		}
+	default:
+		prm = &UnsupportedElement{
+			ImportPath: ImportElement{Path: at.PkgPath()},
+			UserType:   at.Name(),
+			BaseType:   at.Kind().String(),
+			IsPointer:  pointer,
+		}
 	}
 
-	if prm.BaseType == reflect.Struct.String() {
-		prm.Fields = LookAtFields(at)
-	}
-	//fmt.Printf("struct element %# v", pretty.Formatter(prm))
-
-	return &prm
+	return prm
 }
 
 type Field struct {
 	Name       string
 	ImportPath ImportElement
-	BaseType   reflect.Kind
+	BaseType   string
 	UserType   string
 	Anonymous  bool
 }
@@ -169,7 +237,7 @@ func LookAtField(ft reflect.StructField) Field {
 	return Field{
 		Name:       ft.Name,
 		ImportPath: ImportElement{Path: ft.Type.PkgPath()},
-		BaseType:   ft.Type.Kind(),
+		BaseType:   ft.Type.Kind().String(),
 		UserType:   ft.Type.Name(),
 		Anonymous:  ft.Anonymous,
 	}

@@ -6,5 +6,3 @@ type Req1 struct {
 }
 
 type List1 []*Req1
-
-func Foo([]*Req1) {}

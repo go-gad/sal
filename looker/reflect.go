@@ -77,6 +77,8 @@ func run(program string) (*Package, error) {
 	// Process output.
 	var pkg Package
 	gob.Register(&StructElement{})
+	gob.Register(&SliceElement{})
+	gob.Register(&InterfaceElement{})
 	//gob.Register(Parameters{})
 	//gob.Register(Field{})
 	//gob.Register(Fields{})
@@ -160,6 +162,8 @@ func EncodeGob(output string, pkg *Package) error {
 	}
 
 	gob.Register(&StructElement{})
+	gob.Register(&SliceElement{})
+	gob.Register(&InterfaceElement{})
 	//gob.Register(Parameters{})
 	//gob.Register(Field{})
 	//gob.Register(Fields{})

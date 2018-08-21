@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-gad/sal/examples/bookstore1"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
@@ -36,7 +37,7 @@ func TestSalStoreClient_GetAuthors(t *testing.T) {
 	defer db.Close()
 	client := NewStoreClient(db)
 
-	req := bookstore1.GetAuthorsReq{ID: 123}
+	req := bookstore1.GetAuthorsReq{ID: 123, Tags: []int64{33, 44, 55}}
 
 	expResp := []*bookstore1.GetAuthorsResp{
 		&bookstore1.GetAuthorsResp{ID: 10, Name: "Bob", Desc: "d1", CreatedAt: time.Now().Truncate(time.Millisecond)},
@@ -49,7 +50,7 @@ func TestSalStoreClient_GetAuthors(t *testing.T) {
 		rows = rows.AddRow(v.ID, v.Name, v.Desc, v.CreatedAt)
 	}
 
-	mock.ExpectQuery(`SELECT id, created_at, name,.+`).WithArgs(req.ID).WillReturnRows(rows)
+	mock.ExpectQuery(`SELECT id, created_at, name,.+`).WithArgs(req.ID, pq.Array(req.Tags)).WillReturnRows(rows)
 
 	resp, err := client.GetAuthors(context.Background(), req)
 	assert.Equal(t, expResp, resp)

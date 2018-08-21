@@ -3,6 +3,9 @@ package bookstore1
 import (
 	"context"
 	"time"
+
+	"github.com/go-gad/sal"
+	"github.com/lib/pq"
 )
 
 //go:generate salgen -destination=./actsal/sal_client.go -package=actsal github.com/go-gad/sal/examples/bookstore1 StoreClient
@@ -27,11 +30,16 @@ type CreateAuthorResp struct {
 }
 
 type GetAuthorsReq struct {
-	ID int64 `sql:"id"`
+	ID   int64   `sql:"id"`
+	Tags []int64 `sql:"tags"`
+}
+
+func (r GetAuthorsReq) ProcessRow(rowMap sal.RowMap) {
+	rowMap["tags"] = pq.Array(r.Tags)
 }
 
 func (r *GetAuthorsReq) Query() string {
-	return `SELECT id, created_at, name, desc FROM authors WHERE id>@id`
+	return `SELECT id, created_at, name, desc FROM authors WHERE id>@id AND tags @> @tags`
 }
 
 type GetAuthorsResp struct {

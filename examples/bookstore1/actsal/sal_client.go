@@ -18,7 +18,7 @@ func NewStoreClient(db *sql.DB) *SalStoreClient {
 }
 
 func (s *SalStoreClient) CreateAuthor(ctx context.Context, req bookstore1.CreateAuthorReq) (*bookstore1.CreateAuthorResp, error) {
-	var reqMap = make(sal.ArgsMap)
+	var reqMap = make(sal.RowMap)
 	reqMap["Name"] = &req.Name
 	reqMap["Desc"] = &req.Desc
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
@@ -64,8 +64,9 @@ func (s *SalStoreClient) CreateAuthor(ctx context.Context, req bookstore1.Create
 }
 
 func (s *SalStoreClient) GetAuthors(ctx context.Context, req bookstore1.GetAuthorsReq) ([]*bookstore1.GetAuthorsResp, error) {
-	var reqMap = make(sal.ArgsMap)
+	var reqMap = make(sal.RowMap)
 	reqMap["id"] = &req.ID
+	reqMap["tags"] = &req.Tags
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
 	rows, err := s.DB.Query(pgQuery, args...)
@@ -110,7 +111,7 @@ func (s *SalStoreClient) GetAuthors(ctx context.Context, req bookstore1.GetAutho
 }
 
 func (s *SalStoreClient) UpdateAuthor(ctx context.Context, req *bookstore1.UpdateAuthorReq) error {
-	var reqMap = make(sal.ArgsMap)
+	var reqMap = make(sal.RowMap)
 	reqMap["ID"] = &req.ID
 	reqMap["Name"] = &req.Name
 	reqMap["Desc"] = &req.Desc

@@ -101,10 +101,11 @@ func LookAtFuncParameters(mt reflect.Type) (Parameters, Parameters) {
 
 // Use exported fields because god.Encoder
 type StructElement struct {
-	ImportPath ImportElement
-	UserType   string
-	IsPointer  bool
-	Fields     Fields
+	ImportPath   ImportElement
+	UserType     string
+	IsPointer    bool
+	Fields       Fields
+	ProcessRower bool
 }
 
 func (prm *StructElement) Kind() string {
@@ -187,6 +188,7 @@ func (prm *UnsupportedElement) Pointer() bool {
 
 func LookAtParameter(at reflect.Type) Parameter {
 	var pointer bool
+	original := at
 	if at.Kind() == reflect.Ptr {
 		at = at.Elem()
 		pointer = true
@@ -196,10 +198,11 @@ func LookAtParameter(at reflect.Type) Parameter {
 	switch at.Kind() {
 	case reflect.Struct:
 		prm = &StructElement{
-			ImportPath: ImportElement{Path: at.PkgPath()},
-			UserType:   at.Name(),
-			IsPointer:  pointer,
-			Fields:     LookAtFields(at),
+			ImportPath:   ImportElement{Path: at.PkgPath()},
+			UserType:     at.Name(),
+			IsPointer:    pointer,
+			Fields:       LookAtFields(at),
+			ProcessRower: hasProcessRow(original),
 		}
 	case reflect.Slice:
 		prm = &SliceElement{
@@ -223,6 +226,15 @@ func LookAtParameter(at reflect.Type) Parameter {
 	}
 
 	return prm
+}
+
+const processRowStr = "ProcessRow"
+
+// if you pass resolved to elem ptr you can't use `func (r *Req)ProcessRow()` notation!
+func hasProcessRow(typ reflect.Type) bool {
+	_, ok := typ.MethodByName(processRowStr)
+
+	return ok
 }
 
 type Field struct {

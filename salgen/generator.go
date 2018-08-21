@@ -96,12 +96,17 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	outArgs = append(outArgs, mtd.Out[len(mtd.Out)-1].Name())
 
 	g.p("func (s *%v) %v(%v) (%v) {", implName, mtd.Name, inArgs.String(), outArgs.String())
-	g.p("var reqMap = make(sal.KeysIntf)")
+	g.p("var reqMap = make(sal.RowMap)")
 
 	if req.Kind() == reflect.Struct.String() {
 		reqSt := req.(*looker.StructElement)
 		for _, field := range reqSt.Fields {
 			g.p("reqMap[%q] = &req.%s", field.ColumnName(), field.Name)
+		}
+		g.br()
+		if reqSt.ProcessRower {
+			g.p("req.ProcessRow(reqMap)")
+			g.br()
 		}
 	} else {
 		return errors.New("unsupported type of request variable")
@@ -144,11 +149,6 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.br()
 	}
 
-	/*
-		var list = make([]*bookstore.GetAuthorsResp, 0)
-
-		for rows.Next() {
-	*/
 	var respRow looker.Parameter
 	if operation == QueryOperation {
 		g.p("var list = make(%s, 0)", resp.Name())
@@ -162,16 +162,21 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	}
 	var respRowStr = "resp"
 	g.p("var %s %s", respRowStr, respRow.Name())
-	g.p("var mm = make(sal.KeysIntf)")
+	g.p("var respMap = make(sal.RowMap)")
 	if respRow.Kind() == reflect.Struct.String() {
 		respSt := respRow.(*looker.StructElement)
 		for _, field := range respSt.Fields {
-			g.p("mm[%q] = &resp.%s", field.ColumnName(), field.Name)
+			g.p("respMap[%q] = &resp.%s", field.ColumnName(), field.Name)
+		}
+		g.br()
+		if respSt.ProcessRower {
+			g.p("%s.ProcessRow(respMap)", respRowStr)
+			g.br()
 		}
 	}
-	g.p("var dest = make([]interface{}, 0, len(mm))")
+	g.p("var dest = make([]interface{}, 0, len(respMap))")
 	g.p("for _, v := range cols {")
-	g.p("if intr, ok := mm[v]; ok {")
+	g.p("if intr, ok := respMap[v]; ok {")
 	g.p("dest = append(dest, intr)")
 	g.p("}")
 	g.p("}")

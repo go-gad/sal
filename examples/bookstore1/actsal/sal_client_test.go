@@ -5,7 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"database/sql/driver"
+
 	"github.com/go-gad/sal/examples/bookstore1"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
@@ -28,6 +31,11 @@ func TestSalStoreClient_CreateAuthor(t *testing.T) {
 	assert.Equal(t, &expResp, resp)
 }
 
+func dv(a []int64) driver.Value {
+	v, _ := pq.Int64Array(a).Value()
+	return v
+}
+
 func TestSalStoreClient_GetAuthors(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -36,20 +44,20 @@ func TestSalStoreClient_GetAuthors(t *testing.T) {
 	defer db.Close()
 	client := NewStoreClient(db)
 
-	req := bookstore1.GetAuthorsReq{ID: 123}
+	req := bookstore1.GetAuthorsReq{ID: 123, Tags: []int64{33, 44, 55}}
 
 	expResp := []*bookstore1.GetAuthorsResp{
-		&bookstore1.GetAuthorsResp{ID: 10, Name: "Bob", Desc: "d1", CreatedAt: time.Now().Truncate(time.Millisecond)},
-		&bookstore1.GetAuthorsResp{ID: 20, Name: "Jhn", Desc: "d2", CreatedAt: time.Now().Truncate(time.Millisecond)},
-		&bookstore1.GetAuthorsResp{ID: 30, Name: "Max", Desc: "d3", CreatedAt: time.Now().Truncate(time.Millisecond)},
+		&bookstore1.GetAuthorsResp{ID: 10, Name: "Bob", Desc: "d1", Tags: []int64{1, 2, 3}, CreatedAt: time.Now().Truncate(time.Millisecond)},
+		&bookstore1.GetAuthorsResp{ID: 20, Name: "Jhn", Desc: "d2", Tags: []int64{4, 5, 6}, CreatedAt: time.Now().Truncate(time.Millisecond)},
+		&bookstore1.GetAuthorsResp{ID: 30, Name: "Max", Desc: "d3", Tags: []int64{6, 7, 8}, CreatedAt: time.Now().Truncate(time.Millisecond)},
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "name", "desc", "created_at"})
+	rows := sqlmock.NewRows([]string{"id", "created_at", "name", "desc", "tags"})
 	for _, v := range expResp {
-		rows = rows.AddRow(v.ID, v.Name, v.Desc, v.CreatedAt)
+		rows = rows.AddRow(v.ID, v.CreatedAt, v.Name, v.Desc, dv(v.Tags))
 	}
 
-	mock.ExpectQuery(`SELECT id, created_at, name,.+`).WithArgs(req.ID).WillReturnRows(rows)
+	mock.ExpectQuery(`SELECT id, created_at, name,.+`).WithArgs(req.ID, pq.Array(req.Tags)).WillReturnRows(rows)
 
 	resp, err := client.GetAuthors(context.Background(), req)
 	assert.Equal(t, expResp, resp)

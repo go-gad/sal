@@ -39,7 +39,7 @@ func (r GetAuthorsReq) ProcessRow(rowMap sal.RowMap) {
 }
 
 func (r *GetAuthorsReq) Query() string {
-	return `SELECT id, created_at, name, desc FROM authors WHERE id>@id AND tags @> @tags`
+	return `SELECT id, created_at, name, desc, tags FROM authors WHERE id>@id AND tags @> @tags`
 }
 
 type GetAuthorsResp struct {
@@ -47,6 +47,11 @@ type GetAuthorsResp struct {
 	CreatedAt time.Time `sql:"created_at"`
 	Name      string    `sql:"name"`
 	Desc      string    `sql:"desc"`
+	Tags      []int64   `sql:"tags"`
+}
+
+func (r *GetAuthorsResp) ProcessRow(rowMap sal.RowMap) {
+	rowMap["tags"] = pq.Array(&r.Tags)
 }
 
 type UpdateAuthorReq struct {

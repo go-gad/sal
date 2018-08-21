@@ -149,11 +149,6 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.br()
 	}
 
-	/*
-		var list = make([]*bookstore.GetAuthorsResp, 0)
-
-		for rows.Next() {
-	*/
 	var respRow looker.Parameter
 	if operation == QueryOperation {
 		g.p("var list = make(%s, 0)", resp.Name())
@@ -167,16 +162,21 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	}
 	var respRowStr = "resp"
 	g.p("var %s %s", respRowStr, respRow.Name())
-	g.p("var mm = make(sal.KeysIntf)")
+	g.p("var respMap = make(sal.RowMap)")
 	if respRow.Kind() == reflect.Struct.String() {
 		respSt := respRow.(*looker.StructElement)
 		for _, field := range respSt.Fields {
-			g.p("mm[%q] = &resp.%s", field.ColumnName(), field.Name)
+			g.p("respMap[%q] = &resp.%s", field.ColumnName(), field.Name)
+		}
+		g.br()
+		if respSt.ProcessRower {
+			g.p("%s.ProcessRow(respMap)", respRowStr)
+			g.br()
 		}
 	}
-	g.p("var dest = make([]interface{}, 0, len(mm))")
+	g.p("var dest = make([]interface{}, 0, len(respMap))")
 	g.p("for _, v := range cols {")
-	g.p("if intr, ok := mm[v]; ok {")
+	g.p("if intr, ok := respMap[v]; ok {")
 	g.p("dest = append(dest, intr)")
 	g.p("}")
 	g.p("}")

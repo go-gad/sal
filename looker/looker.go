@@ -188,6 +188,7 @@ func (prm *UnsupportedElement) Pointer() bool {
 
 func LookAtParameter(at reflect.Type) Parameter {
 	var pointer bool
+	original := at
 	if at.Kind() == reflect.Ptr {
 		at = at.Elem()
 		pointer = true
@@ -201,7 +202,7 @@ func LookAtParameter(at reflect.Type) Parameter {
 			UserType:     at.Name(),
 			IsPointer:    pointer,
 			Fields:       LookAtFields(at),
-			ProcessRower: hasProcessRow(at),
+			ProcessRower: hasProcessRow(original),
 		}
 	case reflect.Slice:
 		prm = &SliceElement{
@@ -229,6 +230,7 @@ func LookAtParameter(at reflect.Type) Parameter {
 
 const processRowStr = "ProcessRow"
 
+// if you pass resolved to elem ptr you can't use `func (r *Req)ProcessRow()` notation!
 func hasProcessRow(typ reflect.Type) bool {
 	_, ok := typ.MethodByName(processRowStr)
 

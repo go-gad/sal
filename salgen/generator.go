@@ -103,6 +103,11 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		for _, field := range reqSt.Fields {
 			g.p("reqMap[%q] = &req.%s", field.ColumnName(), field.Name)
 		}
+		g.br()
+		if reqSt.ProcessRower {
+			g.p("req.ProcessRow(reqMap)")
+			g.br()
+		}
 	} else {
 		return errors.New("unsupported type of request variable")
 	}

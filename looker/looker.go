@@ -101,10 +101,11 @@ func LookAtFuncParameters(mt reflect.Type) (Parameters, Parameters) {
 
 // Use exported fields because god.Encoder
 type StructElement struct {
-	ImportPath ImportElement
-	UserType   string
-	IsPointer  bool
-	Fields     Fields
+	ImportPath   ImportElement
+	UserType     string
+	IsPointer    bool
+	Fields       Fields
+	ProcessRower bool
 }
 
 func (prm *StructElement) Kind() string {
@@ -196,10 +197,11 @@ func LookAtParameter(at reflect.Type) Parameter {
 	switch at.Kind() {
 	case reflect.Struct:
 		prm = &StructElement{
-			ImportPath: ImportElement{Path: at.PkgPath()},
-			UserType:   at.Name(),
-			IsPointer:  pointer,
-			Fields:     LookAtFields(at),
+			ImportPath:   ImportElement{Path: at.PkgPath()},
+			UserType:     at.Name(),
+			IsPointer:    pointer,
+			Fields:       LookAtFields(at),
+			ProcessRower: hasProcessRow(at),
 		}
 	case reflect.Slice:
 		prm = &SliceElement{
@@ -223,6 +225,14 @@ func LookAtParameter(at reflect.Type) Parameter {
 	}
 
 	return prm
+}
+
+const processRowStr = "ProcessRow"
+
+func hasProcessRow(typ reflect.Type) bool {
+	_, ok := typ.MethodByName(processRowStr)
+
+	return ok
 }
 
 type Field struct {

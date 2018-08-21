@@ -21,6 +21,7 @@ func (s *SalStoreClient) CreateAuthor(ctx context.Context, req bookstore1.Create
 	var reqMap = make(sal.RowMap)
 	reqMap["Name"] = &req.Name
 	reqMap["Desc"] = &req.Desc
+
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
 	rows, err := s.DB.Query(pgQuery, args...)
@@ -67,6 +68,9 @@ func (s *SalStoreClient) GetAuthors(ctx context.Context, req bookstore1.GetAutho
 	var reqMap = make(sal.RowMap)
 	reqMap["id"] = &req.ID
 	reqMap["tags"] = &req.Tags
+
+	req.ProcessRow(reqMap)
+
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
 	rows, err := s.DB.Query(pgQuery, args...)
@@ -115,6 +119,7 @@ func (s *SalStoreClient) UpdateAuthor(ctx context.Context, req *bookstore1.Updat
 	reqMap["ID"] = &req.ID
 	reqMap["Name"] = &req.Name
 	reqMap["Desc"] = &req.Desc
+
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
 	_, err := s.DB.Exec(pgQuery, args...)

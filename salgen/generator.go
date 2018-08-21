@@ -7,7 +7,10 @@ import (
 	"log"
 	"strings"
 
+	"reflect"
+
 	"github.com/go-gad/sal/looker"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -83,9 +86,15 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("func (s *%v) %v(%v) (%v) {", implName, mtd.Name, inArgs.String(), outArgs.String())
 	g.p("var reqMap = make(sal.KeysIntf)")
 
-	for _, field := range req.Fields() {
-		g.p("reqMap[%q] = &req.%s", field.Name, field.Name)
+	if req.Kind() == reflect.Struct {
+		reqSt := req.(*looker.StructElement)
+		for _, field := range reqSt.AllFields {
+			g.p("reqMap[%q] = &req.%s", field.Name, field.Name)
+		}
+	} else {
+		return errors.New("unsupported type of request variable")
 	}
+
 	g.p("pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)")
 	g.br()
 
@@ -108,8 +117,11 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 
 	g.p("var resp %s", resp.Name())
 	g.p("var mm = make(sal.KeysIntf)")
-	for _, field := range resp.Fields() {
-		g.p("mm[%q] = &resp.%s", field.Name, field.Name)
+	if resp.Kind() == reflect.Struct {
+		respSt := resp.(*looker.StructElement)
+		for _, field := range respSt.AllFields {
+			g.p("mm[%q] = &resp.%s", field.Name, field.Name)
+		}
 	}
 	g.p("var dest = make([]interface{}, 0, len(mm))")
 	g.p("for _, v := range cols {")
@@ -124,7 +136,12 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("}")
 	g.br()
 
-	g.p("return &resp, nil")
+	respStr := "resp"
+	if resp.Pointer() {
+		respStr = "&resp"
+	}
+
+	g.p("return %s, nil", respStr)
 	g.p("}")
 
 	return nil

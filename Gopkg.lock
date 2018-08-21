@@ -32,6 +32,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/sergi/go-diff"
+  packages = ["diffmatchpatch"]
+  revision = "1744e2970ca51c86172c8190fadad617561ed6e7"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
   revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
@@ -46,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6a57ae94dd6c4d212e2797ff4ce514a0ae59d25da9942383cba6435b9a9137c1"
+  inputs-digest = "8c758611a60530d87dcdd2056ab0e85219ef9c138238a95323d8228e06529caf"
   solver-name = "gps-cdcl"
   solver-version = 1

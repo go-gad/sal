@@ -77,7 +77,6 @@ type Methods []*Method
 type Parameter interface {
 	Kind() reflect.Kind
 	Name() string
-	Fields() Fields
 	Pointer() bool
 }
 
@@ -113,10 +112,6 @@ func (prm *StructElement) Name() string {
 	return prm.ImportPath.Name() + "." + prm.UserType
 }
 
-func (prm *StructElement) Fields() Fields {
-	return prm.AllFields
-}
-
 func (prm *StructElement) Pointer() bool {
 	return prm.IsPointer
 }
@@ -127,6 +122,7 @@ func LookAtParameter(at reflect.Type) *StructElement {
 		at = at.Elem()
 		pointer = true
 	}
+
 	prm := StructElement{
 		ImportPath: ImportElement{Path: at.PkgPath()},
 		BaseType:   at.Kind(),

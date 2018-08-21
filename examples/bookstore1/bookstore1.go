@@ -9,6 +9,7 @@ import (
 type StoreClient interface {
 	CreateAuthor(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)
 	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)
+	UpdateAuthor(context.Context, *UpdateAuthorReq) error
 }
 
 type CreateAuthorReq struct {
@@ -38,4 +39,14 @@ type GetAuthorsResp struct {
 	CreatedAt time.Time
 	Name      string
 	Desc      string
+}
+
+type UpdateAuthorReq struct {
+	ID   int64
+	Name string
+	Desc string
+}
+
+func (r *UpdateAuthorReq) Query() string {
+	return `UPDATE authors SET Name=@Name, Desc=@Desc WHERE ID=@ID`
 }

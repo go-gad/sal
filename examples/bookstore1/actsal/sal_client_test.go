@@ -55,3 +55,18 @@ func TestSalStoreClient_GetAuthors(t *testing.T) {
 	assert.Equal(t, expResp, resp)
 	assert.Nil(t, err)
 }
+
+func TestSalStoreClient_UpdateAuthor(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	client := NewStoreClient(db)
+
+	req := bookstore1.UpdateAuthorReq{ID: 123, Name: "John", Desc: "foo-bar"}
+	mock.ExpectExec("UPDATE authors SET.+").WithArgs(req.Name, req.Desc, req.ID).WillReturnResult(sqlmock.NewResult(0, 1))
+
+	err = client.UpdateAuthor(context.Background(), &req)
+	assert.Nil(t, err)
+}

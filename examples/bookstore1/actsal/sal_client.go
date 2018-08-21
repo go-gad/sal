@@ -100,3 +100,18 @@ func (s *SalStoreClient) GetAuthors(ctx context.Context, req bookstore1.GetAutho
 
 	return list, nil
 }
+
+func (s *SalStoreClient) UpdateAuthor(ctx context.Context, req *bookstore1.UpdateAuthorReq) error {
+	var reqMap = make(sal.KeysIntf)
+	reqMap["ID"] = &req.ID
+	reqMap["Name"] = &req.Name
+	reqMap["Desc"] = &req.Desc
+	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
+
+	_, err := s.DB.Exec(pgQuery, args...)
+	if err != nil {
+		return errors.Wrap(err, "failed to execute Exec")
+	}
+
+	return nil
+}

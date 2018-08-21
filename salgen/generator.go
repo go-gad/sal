@@ -110,14 +110,29 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)")
 	g.br()
 
-	g.p("rows, err := s.DB.Query(pgQuery, args...)")
-	g.ifErr("failed to execute Query")
-	g.p("defer rows.Close()")
-	g.br()
+	switch operation {
+	case QueryOperation, QueryRowOperation:
+		g.p("rows, err := s.DB.Query(pgQuery, args...)")
+		g.ifErr("failed to execute Query")
+		g.p("defer rows.Close()")
+		g.br()
 
-	g.p("cols, err := rows.Columns()")
-	g.ifErr("failed to fetch columns")
-	g.br()
+		g.p("cols, err := rows.Columns()")
+		g.ifErr("failed to fetch columns")
+		g.br()
+	case ExecOperation:
+		g.p("_, err := s.DB.Exec(pgQuery, args...)")
+		g.p("if err != nil {")
+		g.p("return errors.Wrap(err, %q)", "failed to execute Exec")
+		g.p("}")
+		g.br()
+	}
+
+	if operation == ExecOperation {
+		g.p("return nil")
+		g.p("}")
+		return nil
+	}
 
 	if operation == QueryRowOperation {
 		g.p("if !rows.Next() {")

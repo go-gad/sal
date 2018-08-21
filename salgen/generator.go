@@ -17,6 +17,14 @@ const (
 	Prefix = "Sal"
 )
 
+type OperationType int
+
+const (
+	QueryRowOperation OperationType = iota
+	QueryOperation
+	ExecOperation
+)
+
 type generator struct {
 	buf    bytes.Buffer
 	indent string
@@ -59,6 +67,7 @@ func (g *generator) GenerateInterface(intf *looker.Interface) error {
 		if err := g.GenerateMethod(implName, mtd); err != nil {
 			return err
 		}
+		g.br()
 	}
 
 	return nil
@@ -76,12 +85,16 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	req := mtd.In[1]
 	inArgs = append(inArgs, "req "+elementType(req.Pointer(), req.Name()))
 
+	operation := calcOperationType(mtd.Out)
+	fmt.Printf("Operation %+v\n", operation)
+
 	outArgs := make(prmArgs, 0, 2)
 
 	resp := mtd.Out[0]
-	outArgs = append(outArgs, elementType(resp.Pointer(), resp.Name()))
-
-	outArgs = append(outArgs, "error")
+	if operation != ExecOperation {
+		outArgs = append(outArgs, elementType(resp.Pointer(), resp.Name()))
+	}
+	outArgs = append(outArgs, mtd.Out[len(mtd.Out)-1].Name())
 
 	g.p("func (s *%v) %v(%v) (%v) {", implName, mtd.Name, inArgs.String(), outArgs.String())
 	g.p("var reqMap = make(sal.KeysIntf)")
@@ -107,18 +120,37 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.ifErr("failed to fetch columns")
 	g.br()
 
-	g.p("if !rows.Next() {")
-	g.p("if err := rows.Err(); err != nil {")
-	g.p("return nil, errors.Wrap(err, %q)", "rows error")
-	g.p("}")
-	g.p("return nil, sql.ErrNoRows")
-	g.p("}")
-	g.br()
+	if operation == QueryRowOperation {
+		g.p("if !rows.Next() {")
+		g.p("if err := rows.Err(); err != nil {")
+		g.p("return nil, errors.Wrap(err, %q)", "rows error")
+		g.p("}")
+		g.p("return nil, sql.ErrNoRows")
+		g.p("}")
+		g.br()
+	}
 
-	g.p("var resp %s", resp.Name())
+	/*
+		var list = make([]*bookstore.GetAuthorsResp, 0)
+
+		for rows.Next() {
+	*/
+	var respRow looker.Parameter
+	if operation == QueryOperation {
+		g.p("var list = make(%s, 0)", resp.Name())
+		g.br()
+		g.p("for rows.Next() {")
+		respSlice := resp.(*looker.SliceElement)
+
+		respRow = respSlice.Item
+	} else {
+		respRow = resp
+	}
+	var respRowStr = "resp"
+	g.p("var %s %s", respRowStr, respRow.Name())
 	g.p("var mm = make(sal.KeysIntf)")
-	if resp.Kind() == reflect.Struct.String() {
-		respSt := resp.(*looker.StructElement)
+	if respRow.Kind() == reflect.Struct.String() {
+		respSt := respRow.(*looker.StructElement)
 		for _, field := range respSt.Fields {
 			g.p("mm[%q] = &resp.%s", field.Name, field.Name)
 		}
@@ -134,12 +166,25 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("if err = rows.Scan(dest...); err != nil {")
 	g.p("return nil, errors.Wrap(err, %q)", "failed to scan row")
 	g.p("}")
+	if operation == QueryOperation {
+
+		//fmt.Printf("struct element %# v", pretty.Formatter(resp))
+		if respRow.Pointer() {
+			respRowStr = "&resp"
+		}
+		g.br()
+		g.p("list = append(list, %s)", respRowStr)
+		g.p("}")
+	}
 	g.br()
 
 	respStr := "resp"
+	if operation == QueryOperation {
+		respStr = "list"
+	}
 	//fmt.Printf("struct element %# v", pretty.Formatter(resp))
 	if resp.Pointer() {
-		respStr = "&resp"
+		respStr = "&" + respStr
 	}
 
 	g.p("return %s, nil", respStr)
@@ -177,4 +222,14 @@ func (g *generator) p(format string, args ...interface{}) {
 
 func (g *generator) br() {
 	g.p("")
+}
+
+func calcOperationType(prms looker.Parameters) OperationType {
+	if len(prms) == 1 {
+		return ExecOperation
+	}
+	if prms[0].Kind() == reflect.Slice.String() {
+		return QueryOperation
+	}
+	return QueryRowOperation
 }

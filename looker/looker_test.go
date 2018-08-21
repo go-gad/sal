@@ -39,6 +39,8 @@ func TestLookAtParameter(t *testing.T) {
 }
 
 func TestLookAtParameter2(t *testing.T) {
+	ftyp := reflect.TypeOf(testdata.Foo)
+	//t.Logf("in kinder %q namer %q", ftyp.In(0).Kind().String(), ftyp.In(0).Name())
 	for _, tc := range []struct {
 		test string
 		typ  reflect.Type
@@ -68,6 +70,37 @@ func TestLookAtParameter2(t *testing.T) {
 			},
 			kind: reflect.Slice.String(),
 			name: "[]*testdata.Req1",
+			ptr:  false,
+		}, {
+			test: "user type of slice",
+			typ:  reflect.TypeOf(testdata.List1{}),
+			prm: &looker.StructElement{
+				ImportPath: looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata"},
+				UserType:   "List1",
+				IsPointer:  false,
+			},
+			kind: reflect.Slice.String(),
+			name: "testdata.List1",
+			ptr:  false,
+		}, {
+			test: "context",
+			typ:  ftyp.In(0),
+			prm: &looker.InterfaceElement{
+				ImportPath: looker.ImportElement{Path: "context"},
+				UserType:   "Context",
+			},
+			kind: reflect.Interface.String(),
+			name: "context.Context",
+			ptr:  false,
+		}, {
+			test: "error",
+			typ:  ftyp.Out(0),
+			prm: &looker.InterfaceElement{
+				ImportPath: looker.ImportElement{Path: ""},
+				UserType:   "error",
+			},
+			kind: reflect.Interface.String(),
+			name: "error",
 			ptr:  false,
 		},
 	} {

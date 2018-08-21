@@ -22,6 +22,9 @@ func (ie ImportElement) Name() string {
 	if ie.Alias != "" {
 		return ie.Alias
 	}
+	if ie.Path == "" {
+		return ""
+	}
 
 	return path.Base(ie.Path)
 }
@@ -128,6 +131,10 @@ func (prm *SliceElement) Kind() string {
 }
 
 func (prm *SliceElement) Name() string {
+	if prm.UserType != "" {
+		return prm.ImportPath.Name() + "." + prm.UserType
+	}
+
 	var ptr string
 	if prm.Item.Pointer() {
 		ptr = "*"
@@ -149,6 +156,9 @@ func (prm *InterfaceElement) Kind() string {
 }
 
 func (prm *InterfaceElement) Name() string {
+	if prm.ImportPath.Path == "" {
+		return prm.UserType
+	}
 	return prm.ImportPath.Name() + "." + prm.UserType
 }
 
@@ -182,6 +192,7 @@ func LookAtParameter(at reflect.Type) Parameter {
 		pointer = true
 	}
 	var prm Parameter
+	//fmt.Printf("kind %q, name %q\n", at.Kind().String(), at.Name())
 	switch at.Kind() {
 	case reflect.Struct:
 		prm = &StructElement{

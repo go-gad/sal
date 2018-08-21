@@ -3,7 +3,7 @@ package testdata
 import "context"
 
 type Req1 struct {
-	ID   int64
+	ID   int64 `sql:"id"`
 	Name string
 }
 

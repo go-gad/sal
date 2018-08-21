@@ -101,7 +101,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	if req.Kind() == reflect.Struct.String() {
 		reqSt := req.(*looker.StructElement)
 		for _, field := range reqSt.Fields {
-			g.p("reqMap[%q] = &req.%s", field.Name, field.Name)
+			g.p("reqMap[%q] = &req.%s", field.ColumnName(), field.Name)
 		}
 	} else {
 		return errors.New("unsupported type of request variable")
@@ -166,7 +166,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	if respRow.Kind() == reflect.Struct.String() {
 		respSt := respRow.(*looker.StructElement)
 		for _, field := range respSt.Fields {
-			g.p("mm[%q] = &resp.%s", field.Name, field.Name)
+			g.p("mm[%q] = &resp.%s", field.ColumnName(), field.Name)
 		}
 	}
 	g.p("var dest = make([]interface{}, 0, len(mm))")

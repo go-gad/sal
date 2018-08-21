@@ -65,7 +65,7 @@ func (s *SalStoreClient) CreateAuthor(ctx context.Context, req bookstore1.Create
 
 func (s *SalStoreClient) GetAuthors(ctx context.Context, req bookstore1.GetAuthorsReq) ([]*bookstore1.GetAuthorsResp, error) {
 	var reqMap = make(sal.KeysIntf)
-	reqMap["ID"] = &req.ID
+	reqMap["id"] = &req.ID
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
 	rows, err := s.DB.Query(pgQuery, args...)
@@ -84,10 +84,10 @@ func (s *SalStoreClient) GetAuthors(ctx context.Context, req bookstore1.GetAutho
 	for rows.Next() {
 		var resp bookstore1.GetAuthorsResp
 		var mm = make(sal.KeysIntf)
-		mm["ID"] = &resp.ID
-		mm["CreatedAt"] = &resp.CreatedAt
-		mm["Name"] = &resp.Name
-		mm["Desc"] = &resp.Desc
+		mm["id"] = &resp.ID
+		mm["created_at"] = &resp.CreatedAt
+		mm["name"] = &resp.Name
+		mm["desc"] = &resp.Desc
 		var dest = make([]interface{}, 0, len(mm))
 		for _, v := range cols {
 			if intr, ok := mm[v]; ok {

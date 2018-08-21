@@ -114,10 +114,29 @@ func TestLookAtParameter2(t *testing.T) {
 	}
 }
 
-func TestLookAtField(t *testing.T) {
-	req := testdata.Req1{ID: 4123, Name: "zooloo"}
-	var typ reflect.Type = reflect.TypeOf(req)
-	ft := typ.Field(0)
-	f := looker.LookAtField(ft)
-	t.Logf("struct field %# v", pretty.Formatter(f))
+func TestLookAtFields(t *testing.T) {
+	var typ reflect.Type = reflect.TypeOf(testdata.Req1{})
+	actFields := looker.LookAtFields(typ)
+
+	expFields := looker.Fields{
+		{
+			Name:       "ID",
+			ImportPath: looker.ImportElement{},
+			BaseType:   "int64",
+			UserType:   "int64",
+			Anonymous:  false,
+			Tag:        "id",
+		},
+		{
+			Name:       "Name",
+			ImportPath: looker.ImportElement{},
+			BaseType:   "string",
+			UserType:   "string",
+			Anonymous:  false,
+			Tag:        "",
+		},
+	}
+	assert.Equal(t, expFields, actFields)
+
+	t.Logf("struct field %# v", pretty.Formatter(actFields))
 }

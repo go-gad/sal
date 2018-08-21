@@ -231,9 +231,19 @@ type Field struct {
 	BaseType   string
 	UserType   string
 	Anonymous  bool
+	Tag        string
+}
+
+func (f Field) ColumnName() string {
+	if f.Tag == "" {
+		return f.Name
+	}
+	return f.Tag
 }
 
 type Fields []Field
+
+const tagName = "sql"
 
 func LookAtFields(st reflect.Type) Fields {
 	fields := make(Fields, 0, st.NumField())
@@ -251,5 +261,6 @@ func LookAtField(ft reflect.StructField) Field {
 		BaseType:   ft.Type.Kind().String(),
 		UserType:   ft.Type.Name(),
 		Anonymous:  ft.Anonymous,
+		Tag:        ft.Tag.Get(tagName),
 	}
 }

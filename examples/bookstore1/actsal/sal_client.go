@@ -56,6 +56,10 @@ func (s *SalStoreClient) CreateAuthor(ctx context.Context, req bookstore1.Create
 		return nil, errors.Wrap(err, "failed to scan row")
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "something failed during iteration")
+	}
+
 	return &resp, nil
 }
 
@@ -96,6 +100,10 @@ func (s *SalStoreClient) GetAuthors(ctx context.Context, req bookstore1.GetAutho
 		}
 
 		list = append(list, &resp)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "something failed during iteration")
 	}
 
 	return list, nil

@@ -190,6 +190,11 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	}
 	g.br()
 
+	g.p("if err := rows.Err(); err != nil {")
+	g.p("return nil, errors.Wrap(err, %q)", "something failed during iteration")
+	g.p("}")
+	g.br()
+
 	respStr := "resp"
 	if operation == QueryOperation {
 		respStr = "list"

@@ -27,3 +27,31 @@ func TestSalStoreClient_CreateAuthor(t *testing.T) {
 	resp, err := client.CreateAuthor(context.Background(), req)
 	assert.Equal(t, &expResp, resp)
 }
+
+func TestSalStoreClient_GetAuthors(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	client := NewStoreClient(db)
+
+	req := bookstore1.GetAuthorsReq{ID: 123}
+
+	expResp := []*bookstore1.GetAuthorsResp{
+		&bookstore1.GetAuthorsResp{ID: 10, Name: "Bob", Desc: "d1", CreatedAt: time.Now().Truncate(time.Millisecond)},
+		&bookstore1.GetAuthorsResp{ID: 20, Name: "Jhn", Desc: "d2", CreatedAt: time.Now().Truncate(time.Millisecond)},
+		&bookstore1.GetAuthorsResp{ID: 30, Name: "Max", Desc: "d3", CreatedAt: time.Now().Truncate(time.Millisecond)},
+	}
+
+	rows := sqlmock.NewRows([]string{"ID", "Name", "Desc", "CreatedAt"})
+	for _, v := range expResp {
+		rows = rows.AddRow(v.ID, v.Name, v.Desc, v.CreatedAt)
+	}
+
+	mock.ExpectQuery(`SELECT ID, CreatedAt, Name,.+`).WithArgs(req.ID).WillReturnRows(rows)
+
+	resp, err := client.GetAuthors(context.Background(), req)
+	assert.Equal(t, expResp, resp)
+	assert.Nil(t, err)
+}

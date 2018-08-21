@@ -192,7 +192,7 @@ func LookAtParameter(at reflect.Type) Parameter {
 		pointer = true
 	}
 	var prm Parameter
-	//fmt.Printf("kind %q, name %q\n", at.Kind().String(), at.Name())
+
 	switch at.Kind() {
 	case reflect.Struct:
 		prm = &StructElement{

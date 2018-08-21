@@ -30,7 +30,7 @@ type GetAuthorsReq struct {
 }
 
 func (r *GetAuthorsReq) Query() string {
-	return `SELECT ID, CreatedAt, Name, Desc FROM authors WHERE ID>@id`
+	return `SELECT ID, CreatedAt, Name, Desc FROM authors WHERE ID>@ID`
 }
 
 type GetAuthorsResp struct {

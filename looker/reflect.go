@@ -69,19 +69,13 @@ func run(program string) (*Package, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to open file %s", filename)
 	}
-	//
-	//b, _ := ioutil.ReadFile(filename)
-	////fmt.Printf("fff\n%s", string(b))
-	//bb := bytes.NewBuffer(b)
 
 	// Process output.
 	var pkg Package
 	gob.Register(&StructElement{})
 	gob.Register(&SliceElement{})
 	gob.Register(&InterfaceElement{})
-	//gob.Register(Parameters{})
-	//gob.Register(Field{})
-	//gob.Register(Fields{})
+
 	if err := gob.NewDecoder(f).Decode(&pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to decode pkg")
 	}

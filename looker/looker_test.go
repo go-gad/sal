@@ -40,7 +40,7 @@ func TestLookAtParameter(t *testing.T) {
 
 func TestLookAtParameter2(t *testing.T) {
 	ftyp := reflect.TypeOf(testdata.Foo)
-	//t.Logf("in kinder %q namer %q", ftyp.In(0).Kind().String(), ftyp.In(0).Name())
+
 	for _, tc := range []struct {
 		test string
 		typ  reflect.Type

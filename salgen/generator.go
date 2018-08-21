@@ -86,7 +86,6 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	inArgs = append(inArgs, "req "+elementType(req.Pointer(), req.Name()))
 
 	operation := calcOperationType(mtd.Out)
-	fmt.Printf("Operation %+v\n", operation)
 
 	outArgs := make(prmArgs, 0, 2)
 
@@ -167,8 +166,6 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("return nil, errors.Wrap(err, %q)", "failed to scan row")
 	g.p("}")
 	if operation == QueryOperation {
-
-		//fmt.Printf("struct element %# v", pretty.Formatter(resp))
 		if respRow.Pointer() {
 			respRowStr = "&resp"
 		}
@@ -182,7 +179,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	if operation == QueryOperation {
 		respStr = "list"
 	}
-	//fmt.Printf("struct element %# v", pretty.Formatter(resp))
+
 	if resp.Pointer() {
 		respStr = "&" + respStr
 	}

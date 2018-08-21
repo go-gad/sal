@@ -6,6 +6,7 @@ import (
 
 	pkg_ "github.com/go-gad/sal/examples/bookstore1"
 	"github.com/go-gad/sal/looker"
+	"github.com/go-gad/sal/looker/testdata"
 	"github.com/kr/pretty"
 )
 
@@ -30,14 +31,8 @@ func TestLookAtInterface(t *testing.T) {
 	}
 }
 
-type Req1 struct {
-	ID   int64
-	Name string
-}
-
 func TestLookAtParameter(t *testing.T) {
-	req := &Req1{ID: 4123, Name: "zooloo"}
-	var typ reflect.Type = reflect.TypeOf(req)
+	var typ reflect.Type = reflect.TypeOf(testdata.Req1{})
 
 	if typ.Kind() == reflect.Ptr {
 		t.Log("It is a pointer")
@@ -47,8 +42,26 @@ func TestLookAtParameter(t *testing.T) {
 	t.Logf("struct element %# v", pretty.Formatter(se))
 }
 
+func TestLookAtParameter2(t *testing.T) {
+	for _, tc := range []struct {
+		typ reflect.Type
+	}{
+		{reflect.TypeOf(testdata.Req1{})},
+		{reflect.TypeOf(&testdata.Req1{})},
+		{reflect.TypeOf(testdata.List1{})},
+	} {
+		t.Logf("––––")
+		t.Logf("kind[base type] %q", tc.typ.Kind().String())
+		t.Logf("string %q", tc.typ.String())
+		t.Logf("name %q", tc.typ.Name())
+		t.Logf("pkgpath %q", tc.typ.PkgPath())
+
+	}
+
+}
+
 func TestLookAtField(t *testing.T) {
-	req := Req1{ID: 4123, Name: "zooloo"}
+	req := testdata.Req1{ID: 4123, Name: "zooloo"}
 	var typ reflect.Type = reflect.TypeOf(req)
 	ft := typ.Field(0)
 	f := looker.LookAtField(ft)

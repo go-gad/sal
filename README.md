@@ -60,3 +60,18 @@ resp, err := client.CreateAuthor(context.Background(), req)
 ```
 
 See `examples/bookstore1`.
+
+### Use custom datatypes
+
+If you want to use custom database types, like Array, you can use ProcessRower interface for that. 
+Your request or response should contain method `ProcessRow(rowMap sal.RowMap)`.
+
+```go
+func (r GetAuthorsReq) ProcessRow(rowMap sal.RowMap) {
+	rowMap["tags"] = pq.Array(r.Tags)
+}
+
+func (r *GetAuthorsResp) ProcessRow(rowMap sal.RowMap) {
+	rowMap["tags"] = pq.Array(&r.Tags)
+}
+``` 

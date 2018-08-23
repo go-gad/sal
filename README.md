@@ -75,3 +75,16 @@ func (r *GetAuthorsResp) ProcessRow(rowMap sal.RowMap) {
 	rowMap["tags"] = pq.Array(&r.Tags)
 }
 ``` 
+
+### Transaction
+
+To open transaction use:
+```go
+tx, err := actsal.NewStoreClientManager().Begin(client)
+```
+`tx` is a StoreClient implementation that contains `*sql.Tx` handler instead of `*sql.DB`.
+
+To commit or rollback opened transaction use:
+```go
+err = actsal.NewStoreClientManager().Commit(tx)
+```

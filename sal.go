@@ -43,3 +43,12 @@ type DBHandler interface {
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 	Exec(query string, args ...interface{}) (sql.Result, error)
 }
+
+type TransactionBegin interface {
+	Begin() (*sql.Tx, error)
+}
+
+type TransactionEnd interface {
+	Commit() error
+	Rollback() error
+}

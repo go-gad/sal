@@ -1,4 +1,4 @@
-package actsal
+package actsal_test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"database/sql/driver"
 
 	"github.com/go-gad/sal/examples/bookstore1"
+	"github.com/go-gad/sal/examples/bookstore1/actsal"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
@@ -19,7 +20,7 @@ func TestSalStoreClient_CreateAuthor(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	client := NewStoreClient(db)
+	client := actsal.NewStoreClient(db)
 
 	req := bookstore1.CreateAuthorReq{Name: "foo", Desc: "Bar"}
 
@@ -42,7 +43,7 @@ func TestSalStoreClient_GetAuthors(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	client := NewStoreClient(db)
+	client := actsal.NewStoreClient(db)
 
 	req := bookstore1.GetAuthorsReq{ID: 123, Tags: []int64{33, 44, 55}}
 
@@ -70,11 +71,43 @@ func TestSalStoreClient_UpdateAuthor(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	client := NewStoreClient(db)
+	client := actsal.NewStoreClient(db)
 
 	req := bookstore1.UpdateAuthorReq{ID: 123, Name: "John", Desc: "foo-bar"}
 	mock.ExpectExec("UPDATE authors SET.+").WithArgs(req.Name, req.Desc, req.ID).WillReturnResult(sqlmock.NewResult(0, 1))
 
 	err = client.UpdateAuthor(context.Background(), &req)
 	assert.Nil(t, err)
+}
+
+func TestNewStoreClientManager(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	client := actsal.NewStoreClient(db)
+
+	req1 := bookstore1.CreateAuthorReq{Name: "foo", Desc: "Bar"}
+	rows := sqlmock.NewRows([]string{"ID", "CreatedAt"}).AddRow(int64(1), time.Now().Truncate(time.Millisecond))
+
+	req2 := bookstore1.UpdateAuthorReq{ID: 123, Name: "John", Desc: "foo-bar"}
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(`INSERT INTO authors .+`).WithArgs(req1.Name, req1.Desc).WillReturnRows(rows)
+	mock.ExpectExec("UPDATE authors SET.+").WithArgs(req2.Name, req2.Desc, req2.ID).WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectCommit()
+
+	tx, err := actsal.NewStoreClientManager().Begin(client)
+	assert.Nil(t, err)
+
+	_, err = tx.CreateAuthor(context.Background(), req1)
+	assert.Nil(t, err)
+
+	err = tx.UpdateAuthor(context.Background(), &req2)
+	assert.Nil(t, err)
+
+	err = actsal.NewStoreClientManager().Commit(tx)
+	assert.Nil(t, err)
+
 }

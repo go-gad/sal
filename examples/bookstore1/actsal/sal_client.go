@@ -4,10 +4,53 @@ package actsal
 import (
 	"context"
 	"database/sql"
+
 	"github.com/go-gad/sal"
 	"github.com/go-gad/sal/examples/bookstore1"
 	"github.com/pkg/errors"
 )
+
+type StoreClientManager struct{}
+
+func NewStoreClientManager() *StoreClientManager {
+	return &StoreClientManager{}
+}
+
+func (m *StoreClientManager) Begin(s bookstore1.StoreClient) (bookstore1.StoreClient, error) {
+	c := s.(*SalStoreClient)
+
+	dbconn := c.DBH.(sal.TransactionBegin)
+
+	tx, err := dbconn.Begin()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to start tx")
+	}
+
+	// todo: copy settings, middlewares, options...
+	newss := NewStoreClient(tx)
+
+	return newss, nil
+}
+
+func (m *StoreClientManager) Commit(ss bookstore1.StoreClient) error {
+	c := ss.(*SalStoreClient)
+
+	txconn := c.DBH.(sal.TransactionEnd)
+
+	err := txconn.Commit()
+
+	return errors.Wrap(err, "failed to commit")
+}
+
+func (m *StoreClientManager) Rollback(ss bookstore1.StoreClient) error {
+	c := ss.(*SalStoreClient)
+
+	txconn := c.DBH.(sal.TransactionEnd)
+
+	err := txconn.Rollback()
+
+	return errors.Wrap(err, "failed to commit")
+}
 
 type SalStoreClient struct {
 	DBH sal.DBHandler

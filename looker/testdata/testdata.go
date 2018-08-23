@@ -19,4 +19,4 @@ type Req2 struct {
 	ID int64 `sql:"id"`
 }
 
-func (r Req2) ProcessRow(rm sal.RowMap) {}
+func (r *Req2) ProcessRow(rm sal.RowMap) {}

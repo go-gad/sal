@@ -142,13 +142,19 @@ func TestLookAtFields(t *testing.T) {
 }
 
 func TestIsProcessRower(t *testing.T) {
-	var typ reflect.Type
-	{
-		typ = reflect.TypeOf(testdata.Req1{})
-		assert.False(t, looker.IsProcessRower(reflect.New(typ).Interface()))
-	}
-	{
-		typ = reflect.TypeOf(testdata.Req2{})
-		assert.True(t, looker.IsProcessRower(reflect.New(typ).Interface()))
+	for _, tc := range []struct {
+		typ reflect.Type
+		exp bool
+	}{
+		{reflect.TypeOf(testdata.Req1{}), false},
+		{reflect.TypeOf(&testdata.Req1{}), false},
+		{reflect.TypeOf(testdata.Req2{}), true},
+		{reflect.TypeOf(&testdata.Req2{}), true},
+	} {
+		var typ reflect.Type = tc.typ
+		if tc.typ.Kind() == reflect.Ptr {
+			typ = tc.typ.Elem()
+		}
+		assert.Equal(t, tc.exp, looker.IsProcessRower(reflect.New(typ).Interface()), "input typ %q", typ.String())
 	}
 }

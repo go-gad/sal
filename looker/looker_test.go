@@ -140,3 +140,15 @@ func TestLookAtFields(t *testing.T) {
 
 	t.Logf("struct field %# v", pretty.Formatter(actFields))
 }
+
+func TestIsProcessRower(t *testing.T) {
+	var typ reflect.Type
+	{
+		typ = reflect.TypeOf(testdata.Req1{})
+		assert.False(t, looker.IsProcessRower(reflect.New(typ).Interface()))
+	}
+	{
+		typ = reflect.TypeOf(testdata.Req2{})
+		assert.True(t, looker.IsProcessRower(reflect.New(typ).Interface()))
+	}
+}

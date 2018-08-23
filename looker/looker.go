@@ -3,6 +3,8 @@ package looker
 import (
 	"path"
 	"reflect"
+
+	"github.com/go-gad/sal"
 )
 
 type Package struct {
@@ -188,7 +190,6 @@ func (prm *UnsupportedElement) Pointer() bool {
 
 func LookAtParameter(at reflect.Type) Parameter {
 	var pointer bool
-	original := at
 	if at.Kind() == reflect.Ptr {
 		at = at.Elem()
 		pointer = true
@@ -202,7 +203,7 @@ func LookAtParameter(at reflect.Type) Parameter {
 			UserType:     at.Name(),
 			IsPointer:    pointer,
 			Fields:       LookAtFields(at),
-			ProcessRower: hasProcessRow(original),
+			ProcessRower: IsProcessRower(reflect.New(at).Interface()),
 		}
 	case reflect.Slice:
 		prm = &SliceElement{
@@ -228,11 +229,8 @@ func LookAtParameter(at reflect.Type) Parameter {
 	return prm
 }
 
-const processRowStr = "ProcessRow"
-
-// if you pass resolved to elem ptr you can't use `func (r *Req)ProcessRow()` notation!
-func hasProcessRow(typ reflect.Type) bool {
-	_, ok := typ.MethodByName(processRowStr)
+func IsProcessRower(s interface{}) bool {
+	_, ok := s.(sal.ProcessRower)
 
 	return ok
 }

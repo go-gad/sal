@@ -10,11 +10,11 @@ import (
 )
 
 type SalStoreClient struct {
-	DB *sql.DB
+	DBH sal.DBHandler
 }
 
-func NewStoreClient(db *sql.DB) *SalStoreClient {
-	return &SalStoreClient{DB: db}
+func NewStoreClient(dbh sal.DBHandler) *SalStoreClient {
+	return &SalStoreClient{DBH: dbh}
 }
 
 func (s *SalStoreClient) CreateAuthor(ctx context.Context, req bookstore1.CreateAuthorReq) (*bookstore1.CreateAuthorResp, error) {
@@ -24,7 +24,7 @@ func (s *SalStoreClient) CreateAuthor(ctx context.Context, req bookstore1.Create
 
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
-	rows, err := s.DB.Query(pgQuery, args...)
+	rows, err := s.DBH.Query(pgQuery, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute Query")
 	}
@@ -74,7 +74,7 @@ func (s *SalStoreClient) GetAuthors(ctx context.Context, req bookstore1.GetAutho
 
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
-	rows, err := s.DB.Query(pgQuery, args...)
+	rows, err := s.DBH.Query(pgQuery, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute Query")
 	}
@@ -127,7 +127,7 @@ func (s *SalStoreClient) UpdateAuthor(ctx context.Context, req *bookstore1.Updat
 
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
-	_, err := s.DB.Exec(pgQuery, args...)
+	_, err := s.DBH.Exec(pgQuery, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to execute Exec")
 	}

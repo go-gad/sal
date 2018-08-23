@@ -1,6 +1,7 @@
 package sal
 
 import (
+	"database/sql"
 	"fmt"
 	"regexp"
 )
@@ -35,4 +36,10 @@ func ProcessQueryAndArgs(query string, reqMap RowMap) (string, []interface{}) {
 
 type ProcessRower interface {
 	ProcessRow(rowMap RowMap)
+}
+
+//todo: use methods with Context
+type DBHandler interface {
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
 }

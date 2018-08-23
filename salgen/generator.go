@@ -55,11 +55,11 @@ func (g *generator) Generate(pkg *looker.Package, pkgName string) error {
 func (g *generator) GenerateInterface(intf *looker.Interface) error {
 	implName := Prefix + intf.Name
 	g.p("type %v struct {", implName)
-	g.p("DB *sql.DB")
+	g.p("DBH sal.DBHandler")
 	g.p("}")
 
-	g.p("func New%v(db *sql.DB) *%v {", intf.Name, implName)
-	g.p("return &%v{DB: db}", implName)
+	g.p("func New%v(dbh sal.DBHandler) *%v {", intf.Name, implName)
+	g.p("return &%v{DBH: dbh}", implName)
 	g.p("}")
 	g.br()
 
@@ -117,7 +117,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 
 	switch operation {
 	case QueryOperation, QueryRowOperation:
-		g.p("rows, err := s.DB.Query(pgQuery, args...)")
+		g.p("rows, err := s.DBH.Query(pgQuery, args...)")
 		g.ifErr("failed to execute Query")
 		g.p("defer rows.Close()")
 		g.br()
@@ -126,7 +126,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.ifErr("failed to fetch columns")
 		g.br()
 	case ExecOperation:
-		g.p("_, err := s.DB.Exec(pgQuery, args...)")
+		g.p("_, err := s.DBH.Exec(pgQuery, args...)")
 		g.p("if err != nil {")
 		g.p("return errors.Wrap(err, %q)", "failed to execute Exec")
 		g.p("}")

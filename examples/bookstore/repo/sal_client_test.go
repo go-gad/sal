@@ -99,8 +99,8 @@ func TestNewStoreController(t *testing.T) {
 	mock.ExpectCommit()
 
 	ctx := context.Background()
-	ctrl := repo.NewStoreController(client)
-	tx, err := ctrl.Begin(ctx, nil)
+
+	tx, err := client.BeginTx(ctx, nil)
 	assert.Nil(t, err)
 
 	_, err = tx.CreateAuthor(ctx, req1)
@@ -109,7 +109,7 @@ func TestNewStoreController(t *testing.T) {
 	err = tx.UpdateAuthor(ctx, &req2)
 	assert.Nil(t, err)
 
-	err = ctrl.Commit(tx)
+	err = tx.Commit()
 	assert.Nil(t, err)
 
 }

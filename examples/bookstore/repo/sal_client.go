@@ -10,17 +10,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-type StoreController struct {
-	Client *SalStore
+type SalStore struct {
+	DBH sal.DBHandler
 }
 
-func NewStoreController(ss bookstore.Store) *StoreController {
-	client := ss.(*SalStore)
-	return &StoreController{Client: client}
+func NewStore(dbh sal.DBHandler) *SalStore {
+	return &SalStore{DBH: dbh}
 }
 
-func (ctrl *StoreController) Begin(ctx context.Context, opts *sql.TxOptions) (bookstore.Store, error) {
-	dbConn := ctrl.Client.DBH.(sal.TransactionBegin)
+func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.Store, error) {
+	dbConn := s.DBH.(sal.TransactionBegin)
 
 	tx, err := dbConn.BeginTx(ctx, opts)
 	if err != nil {
@@ -33,9 +32,8 @@ func (ctrl *StoreController) Begin(ctx context.Context, opts *sql.TxOptions) (bo
 	return newClient, nil
 }
 
-func (ctrl *StoreController) Commit(ss bookstore.Store) error {
-	client := ss.(*SalStore)
-	tx := client.DBH.(sal.TransactionEnd)
+func (s *SalStore) Commit() error {
+	tx := s.DBH.(sal.TransactionEnd)
 
 	err := tx.Commit()
 	if err != nil {
@@ -45,8 +43,8 @@ func (ctrl *StoreController) Commit(ss bookstore.Store) error {
 	return nil
 }
 
-func (ctrl *StoreController) Rollback(ss bookstore.Store) error {
-	tx := ctrl.Client.DBH.(sal.TransactionEnd)
+func (s *SalStore) Rollback() error {
+	tx := s.DBH.(sal.TransactionEnd)
 
 	err := tx.Rollback()
 	if err != nil {
@@ -54,21 +52,6 @@ func (ctrl *StoreController) Rollback(ss bookstore.Store) error {
 	}
 
 	return nil
-}
-
-func (ctrl *StoreController) Tx(ss bookstore.Store) *sql.Tx {
-	if tx, ok := ctrl.Client.DBH.(*sql.Tx); ok {
-		return tx
-	}
-	return nil
-}
-
-type SalStore struct {
-	DBH sal.DBHandler
-}
-
-func NewStore(dbh sal.DBHandler) *SalStore {
-	return &SalStore{DBH: dbh}
 }
 
 func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorReq) (*bookstore.CreateAuthorResp, error) {

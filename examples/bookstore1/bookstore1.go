@@ -8,8 +8,8 @@ import (
 	"github.com/lib/pq"
 )
 
-//go:generate salgen -destination=./actsal/sal_client.go -package=actsal github.com/go-gad/sal/examples/bookstore1 StoreClient
-type StoreClient interface {
+//go:generate salgen -destination=./repo/sal_client.go -package=repo github.com/go-gad/sal/examples/bookstore1 Store
+type Store interface {
 	CreateAuthor(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)
 	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)
 	UpdateAuthor(context.Context, *UpdateAuthorReq) error

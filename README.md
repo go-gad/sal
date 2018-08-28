@@ -11,7 +11,7 @@ go get -u github.com/go-gad/sal/...
 
 Define interface
 ```go
-type StoreClient interface {
+type Store interface {
 	CreateAuthor(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)
 }
 ```
@@ -41,7 +41,7 @@ func (cr *CreateAuthorReq) Query() string {
 
 Put `go generate` instruction for your interface:
 ```go
-//go:generate salgen -destination=./actsal/sal_client.go -package=actsal github.com/go-gad/sal/examples/bookstore1 StoreClient
+//go:generate salgen -destination=./actsal/sal_client.go -package=actsal github.com/go-gad/sal/examples/bookstore1 Store
 ```
 
 - flag `destination` describes the output file.
@@ -53,7 +53,7 @@ Run `go generate ./...`. Your client based on interface would be generated. You 
 ```go
 db, err := sql.Open("postgres", connStr)
 
-client := NewStoreClient(db)
+client := NewStore(db)
 req := bookstore1.CreateAuthorReq{Name: "foo", Desc: "Bar"}
 resp, err := client.CreateAuthor(context.Background(), req)
 
@@ -80,11 +80,11 @@ func (r *GetAuthorsResp) ProcessRow(rowMap sal.RowMap) {
 
 To open transaction use:
 ```go
-tx, err := actsal.NewStoreClientManager().Begin(client)
+tx, err := actsal.NewStoreManager().Begin(client)
 ```
-`tx` is a StoreClient implementation that contains `*sql.Tx` handler instead of `*sql.DB`.
+`tx` is a Store implementation that contains `*sql.Tx` handler instead of `*sql.DB`.
 
 To commit or rollback opened transaction use:
 ```go
-err = actsal.NewStoreClientManager().Commit(tx)
+err = actsal.NewStoreManager().Commit(tx)
 ```

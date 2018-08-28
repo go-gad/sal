@@ -1,4 +1,4 @@
-package actsal_test
+package repo_test
 
 import (
 	"context"
@@ -8,19 +8,19 @@ import (
 	"database/sql/driver"
 
 	"github.com/go-gad/sal/examples/bookstore1"
-	"github.com/go-gad/sal/examples/bookstore1/actsal"
+	"github.com/go-gad/sal/examples/bookstore1/repo"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 )
 
-func TestSalStoreClient_CreateAuthor(t *testing.T) {
+func TestSalStore_CreateAuthor(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	client := actsal.NewStoreClient(db)
+	client := repo.NewStore(db)
 
 	req := bookstore1.CreateAuthorReq{Name: "foo", Desc: "Bar"}
 
@@ -37,13 +37,13 @@ func dv(a []int64) driver.Value {
 	return v
 }
 
-func TestSalStoreClient_GetAuthors(t *testing.T) {
+func TestSalStore_GetAuthors(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	client := actsal.NewStoreClient(db)
+	client := repo.NewStore(db)
 
 	req := bookstore1.GetAuthorsReq{ID: 123, Tags: []int64{33, 44, 55}}
 
@@ -65,13 +65,13 @@ func TestSalStoreClient_GetAuthors(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestSalStoreClient_UpdateAuthor(t *testing.T) {
+func TestSalStore_UpdateAuthor(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	client := actsal.NewStoreClient(db)
+	client := repo.NewStore(db)
 
 	req := bookstore1.UpdateAuthorReq{ID: 123, Name: "John", Desc: "foo-bar"}
 	mock.ExpectExec("UPDATE authors SET.+").WithArgs(req.Name, req.Desc, req.ID).WillReturnResult(sqlmock.NewResult(0, 1))
@@ -80,13 +80,13 @@ func TestSalStoreClient_UpdateAuthor(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestNewStoreClientManager(t *testing.T) {
+func TestNewStoreManager(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	client := actsal.NewStoreClient(db)
+	client := repo.NewStore(db)
 
 	req1 := bookstore1.CreateAuthorReq{Name: "foo", Desc: "Bar"}
 	rows := sqlmock.NewRows([]string{"ID", "CreatedAt"}).AddRow(int64(1), time.Now().Truncate(time.Millisecond))
@@ -99,7 +99,7 @@ func TestNewStoreClientManager(t *testing.T) {
 	mock.ExpectCommit()
 
 	ctx := context.Background()
-	ctrl := actsal.NewStoreClientController(client)
+	ctrl := repo.NewStoreController(client)
 	tx, err := ctrl.Begin(ctx, nil)
 	assert.Nil(t, err)
 

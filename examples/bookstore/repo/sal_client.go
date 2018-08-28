@@ -6,7 +6,7 @@ import (
 	"database/sql"
 
 	"github.com/go-gad/sal"
-	"github.com/go-gad/sal/examples/bookstore1"
+	"github.com/go-gad/sal/examples/bookstore"
 	"github.com/pkg/errors"
 )
 
@@ -14,12 +14,12 @@ type StoreController struct {
 	Client *SalStore
 }
 
-func NewStoreController(ss bookstore1.Store) *StoreController {
+func NewStoreController(ss bookstore.Store) *StoreController {
 	client := ss.(*SalStore)
 	return &StoreController{Client: client}
 }
 
-func (ctrl *StoreController) Begin(ctx context.Context, opts *sql.TxOptions) (bookstore1.Store, error) {
+func (ctrl *StoreController) Begin(ctx context.Context, opts *sql.TxOptions) (bookstore.Store, error) {
 	dbConn := ctrl.Client.DBH.(sal.TransactionBegin)
 
 	tx, err := dbConn.BeginTx(ctx, opts)
@@ -33,7 +33,7 @@ func (ctrl *StoreController) Begin(ctx context.Context, opts *sql.TxOptions) (bo
 	return newClient, nil
 }
 
-func (ctrl *StoreController) Commit(ss bookstore1.Store) error {
+func (ctrl *StoreController) Commit(ss bookstore.Store) error {
 	client := ss.(*SalStore)
 	tx := client.DBH.(sal.TransactionEnd)
 
@@ -45,7 +45,7 @@ func (ctrl *StoreController) Commit(ss bookstore1.Store) error {
 	return nil
 }
 
-func (ctrl *StoreController) Rollback(ss bookstore1.Store) error {
+func (ctrl *StoreController) Rollback(ss bookstore.Store) error {
 	tx := ctrl.Client.DBH.(sal.TransactionEnd)
 
 	err := tx.Rollback()
@@ -56,7 +56,7 @@ func (ctrl *StoreController) Rollback(ss bookstore1.Store) error {
 	return nil
 }
 
-func (ctrl *StoreController) Tx(ss bookstore1.Store) *sql.Tx {
+func (ctrl *StoreController) Tx(ss bookstore.Store) *sql.Tx {
 	if tx, ok := ctrl.Client.DBH.(*sql.Tx); ok {
 		return tx
 	}
@@ -71,7 +71,7 @@ func NewStore(dbh sal.DBHandler) *SalStore {
 	return &SalStore{DBH: dbh}
 }
 
-func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore1.CreateAuthorReq) (*bookstore1.CreateAuthorResp, error) {
+func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorReq) (*bookstore.CreateAuthorResp, error) {
 	var reqMap = make(sal.RowMap)
 	reqMap["Name"] = &req.Name
 	reqMap["Desc"] = &req.Desc
@@ -96,7 +96,7 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore1.CreateAuthor
 		return nil, sql.ErrNoRows
 	}
 
-	var resp bookstore1.CreateAuthorResp
+	var resp bookstore.CreateAuthorResp
 	var respMap = make(sal.RowMap)
 	respMap["ID"] = &resp.ID
 	respMap["CreatedAt"] = &resp.CreatedAt
@@ -119,7 +119,7 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore1.CreateAuthor
 	return &resp, nil
 }
 
-func (s *SalStore) GetAuthors(ctx context.Context, req bookstore1.GetAuthorsReq) ([]*bookstore1.GetAuthorsResp, error) {
+func (s *SalStore) GetAuthors(ctx context.Context, req bookstore.GetAuthorsReq) ([]*bookstore.GetAuthorsResp, error) {
 	var reqMap = make(sal.RowMap)
 	reqMap["id"] = &req.ID
 	reqMap["tags"] = &req.Tags
@@ -139,10 +139,10 @@ func (s *SalStore) GetAuthors(ctx context.Context, req bookstore1.GetAuthorsReq)
 		return nil, errors.Wrap(err, "failed to fetch columns")
 	}
 
-	var list = make([]*bookstore1.GetAuthorsResp, 0)
+	var list = make([]*bookstore.GetAuthorsResp, 0)
 
 	for rows.Next() {
-		var resp bookstore1.GetAuthorsResp
+		var resp bookstore.GetAuthorsResp
 		var respMap = make(sal.RowMap)
 		respMap["id"] = &resp.ID
 		respMap["created_at"] = &resp.CreatedAt
@@ -173,7 +173,7 @@ func (s *SalStore) GetAuthors(ctx context.Context, req bookstore1.GetAuthorsReq)
 	return list, nil
 }
 
-func (s *SalStore) UpdateAuthor(ctx context.Context, req *bookstore1.UpdateAuthorReq) error {
+func (s *SalStore) UpdateAuthor(ctx context.Context, req *bookstore.UpdateAuthorReq) error {
 	var reqMap = make(sal.RowMap)
 	reqMap["ID"] = &req.ID
 	reqMap["Name"] = &req.Name

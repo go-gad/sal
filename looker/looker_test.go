@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	pkg_ "github.com/go-gad/sal/examples/bookstore1"
+	pkg_ "github.com/go-gad/sal/examples/bookstore"
 	"github.com/go-gad/sal/looker"
 	"github.com/go-gad/sal/looker/testdata"
 	"github.com/kr/pretty"
@@ -12,7 +12,7 @@ import (
 )
 
 func TestLookAtInterfaces(t *testing.T) {
-	pkgPath := "github.com/go-gad/sal/examples/bookstore1"
+	pkgPath := "github.com/go-gad/sal/examples/bookstore"
 	var list = []reflect.Type{
 		reflect.TypeOf((*pkg_.Store)(nil)).Elem(),
 	}

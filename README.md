@@ -41,7 +41,7 @@ func (cr *CreateAuthorReq) Query() string {
 
 Put `go generate` instruction for your interface:
 ```go
-//go:generate salgen -destination=./actsal/sal_client.go -package=actsal github.com/go-gad/sal/examples/bookstore1 Store
+//go:generate salgen -destination=./actsal/sal_client.go -package=actsal github.com/go-gad/sal/examples/bookstore Store
 ```
 
 - flag `destination` describes the output file.
@@ -54,12 +54,12 @@ Run `go generate ./...`. Your client based on interface would be generated. You 
 db, err := sql.Open("postgres", connStr)
 
 client := NewStore(db)
-req := bookstore1.CreateAuthorReq{Name: "foo", Desc: "Bar"}
+req := bookstore.CreateAuthorReq{Name: "foo", Desc: "Bar"}
 resp, err := client.CreateAuthor(context.Background(), req)
 
 ```
 
-See `examples/bookstore1`.
+See `examples/bookstore`.
 
 ### Use custom datatypes
 

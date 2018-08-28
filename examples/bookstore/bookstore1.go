@@ -1,4 +1,4 @@
-package bookstore1
+package bookstore
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/lib/pq"
 )
 
-//go:generate salgen -destination=./repo/sal_client.go -package=repo github.com/go-gad/sal/examples/bookstore1 Store
+//go:generate salgen -destination=./repo/sal_client.go -package=repo github.com/go-gad/sal/examples/bookstore Store
 type Store interface {
 	CreateAuthor(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)
 	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)

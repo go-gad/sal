@@ -13,7 +13,7 @@ import (
 )
 
 func TestReflect(t *testing.T) {
-	pkg, err := looker.Reflect("github.com/go-gad/sal/examples/bookstore1", []string{"Store"})
+	pkg, err := looker.Reflect("github.com/go-gad/sal/examples/bookstore", []string{"Store"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +32,7 @@ func TestEncodeGob(t *testing.T) {
 	if err := f.Close(); err != nil {
 		t.Fatal(err)
 	}
-	pkg, err := looker.Reflect("github.com/go-gad/sal/examples/bookstore1", []string{"Store"})
+	pkg, err := looker.Reflect("github.com/go-gad/sal/examples/bookstore", []string{"Store"})
 	if err != nil {
 		t.Fatal(err)
 	}

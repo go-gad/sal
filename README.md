@@ -78,13 +78,4 @@ func (r *GetAuthorsResp) ProcessRow(rowMap sal.RowMap) {
 
 ### Transaction
 
-To open transaction use:
-```go
-tx, err := actsal.NewStoreManager().Begin(client)
-```
-`tx` is a Store implementation that contains `*sql.Tx` handler instead of `*sql.DB`.
-
-To commit or rollback opened transaction use:
-```go
-err = actsal.NewStoreManager().Commit(tx)
-```
+todo

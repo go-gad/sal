@@ -10,13 +10,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-type StoreClientManager struct{}
+type StoreClientManager struct {
+	Tx *sql.Tx
+}
 
 func NewStoreClientManager() *StoreClientManager {
 	return &StoreClientManager{}
 }
 
-func (m *StoreClientManager) Begin(s bookstore1.StoreClient) (bookstore1.StoreClient, error) {
+func (ctrl *StoreClientManager) Begin(s bookstore1.StoreClient) (bookstore1.StoreClient, error) {
 	c := s.(*SalStoreClient)
 
 	dbconn := c.DBH.(sal.TransactionBegin)
@@ -25,21 +27,24 @@ func (m *StoreClientManager) Begin(s bookstore1.StoreClient) (bookstore1.StoreCl
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to start tx")
 	}
-
+	ctrl.Tx = tx
 	// todo: copy settings, middlewares, options...
 	newss := NewStoreClient(tx)
 
 	return newss, nil
 }
 
-func (m *StoreClientManager) Commit(ss bookstore1.StoreClient) error {
+func (ctrl *StoreClientManager) Commit(ss bookstore1.StoreClient) error {
 	c := ss.(*SalStoreClient)
 
 	txconn := c.DBH.(sal.TransactionEnd)
 
 	err := txconn.Commit()
-
-	return errors.Wrap(err, "failed to commit")
+	if err != nil {
+		return errors.Wrap(err, "failed to commit")
+	}
+	ctrl.Tx = nil
+	return nil
 }
 
 func (m *StoreClientManager) Rollback(ss bookstore1.StoreClient) error {

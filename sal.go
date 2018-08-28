@@ -1,6 +1,7 @@
 package sal
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"regexp"
@@ -45,7 +46,7 @@ type DBHandler interface {
 }
 
 type TransactionBegin interface {
-	Begin() (*sql.Tx, error)
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
 }
 
 type TransactionEnd interface {

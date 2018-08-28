@@ -98,14 +98,15 @@ func TestNewStoreClientManager(t *testing.T) {
 	mock.ExpectExec("UPDATE authors SET.+").WithArgs(req2.Name, req2.Desc, req2.ID).WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 
-	ctrl := actsal.NewStoreClientManager()
-	tx, err := ctrl.Begin(client)
+	ctx := context.Background()
+	ctrl := actsal.NewStoreClientController(client)
+	tx, err := ctrl.Begin(ctx, nil)
 	assert.Nil(t, err)
 
-	_, err = tx.CreateAuthor(context.Background(), req1)
+	_, err = tx.CreateAuthor(ctx, req1)
 	assert.Nil(t, err)
 
-	err = tx.UpdateAuthor(context.Background(), &req2)
+	err = tx.UpdateAuthor(ctx, &req2)
 	assert.Nil(t, err)
 
 	err = ctrl.Commit(tx)

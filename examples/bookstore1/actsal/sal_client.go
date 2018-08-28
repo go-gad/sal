@@ -10,51 +10,57 @@ import (
 	"github.com/pkg/errors"
 )
 
-type StoreClientManager struct {
-	Tx *sql.Tx
+type StoreClientController struct {
+	Client *SalStoreClient
 }
 
-func NewStoreClientManager() *StoreClientManager {
-	return &StoreClientManager{}
+func NewStoreClientController(ss bookstore1.StoreClient) *StoreClientController {
+	client := ss.(*SalStoreClient)
+	return &StoreClientController{Client: client}
 }
 
-func (ctrl *StoreClientManager) Begin(s bookstore1.StoreClient) (bookstore1.StoreClient, error) {
-	c := s.(*SalStoreClient)
+func (ctrl *StoreClientController) Begin(ctx context.Context, opts *sql.TxOptions) (bookstore1.StoreClient, error) {
+	dbConn := ctrl.Client.DBH.(sal.TransactionBegin)
 
-	dbconn := c.DBH.(sal.TransactionBegin)
-
-	tx, err := dbconn.Begin()
+	tx, err := dbConn.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to start tx")
 	}
-	ctrl.Tx = tx
-	// todo: copy settings, middlewares, options...
-	newss := NewStoreClient(tx)
 
-	return newss, nil
+	// todo: copy settings, middlewares, options...
+	newClient := NewStoreClient(tx)
+
+	return newClient, nil
 }
 
-func (ctrl *StoreClientManager) Commit(ss bookstore1.StoreClient) error {
-	c := ss.(*SalStoreClient)
+func (ctrl *StoreClientController) Commit(ss bookstore1.StoreClient) error {
+	client := ss.(*SalStoreClient)
+	tx := client.DBH.(sal.TransactionEnd)
 
-	txconn := c.DBH.(sal.TransactionEnd)
-
-	err := txconn.Commit()
+	err := tx.Commit()
 	if err != nil {
 		return errors.Wrap(err, "failed to commit")
 	}
-	ctrl.Tx = nil
+
 	return nil
 }
 
-func (m *StoreClientManager) Rollback(ss bookstore1.StoreClient) error {
-	c := ss.(*SalStoreClient)
+func (ctrl *StoreClientController) Rollback(ss bookstore1.StoreClient) error {
+	tx := ctrl.Client.DBH.(sal.TransactionEnd)
 
-	txconn := c.DBH.(sal.TransactionEnd)
+	err := tx.Rollback()
+	if err != nil {
+		return errors.Wrap(err, "failed to commit")
+	}
 
-	err := txconn.Rollback()
+	return nil
+}
 
-	return errors.Wrap(err, "failed to commit")
+func (ctrl *StoreClientController) Tx(ss bookstore1.StoreClient) *sql.Tx {
+	if tx, ok := ctrl.Client.DBH.(*sql.Tx); ok {
+		return tx
+	}
+	return nil
 }
 
 type SalStoreClient struct {

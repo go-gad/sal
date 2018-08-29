@@ -11,7 +11,7 @@ go get -u github.com/go-gad/sal/...
 
 Define interface
 ```go
-type StoreClient interface {
+type Store interface {
 	CreateAuthor(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)
 }
 ```
@@ -41,7 +41,7 @@ func (cr *CreateAuthorReq) Query() string {
 
 Put `go generate` instruction for your interface:
 ```go
-//go:generate salgen -destination=./actsal/sal_client.go -package=actsal github.com/go-gad/sal/examples/bookstore1 StoreClient
+//go:generate salgen -destination=./actsal/sal_client.go -package=actsal github.com/go-gad/sal/examples/bookstore Store
 ```
 
 - flag `destination` describes the output file.
@@ -53,13 +53,13 @@ Run `go generate ./...`. Your client based on interface would be generated. You 
 ```go
 db, err := sql.Open("postgres", connStr)
 
-client := NewStoreClient(db)
-req := bookstore1.CreateAuthorReq{Name: "foo", Desc: "Bar"}
+client := NewStore(db)
+req := bookstore.CreateAuthorReq{Name: "foo", Desc: "Bar"}
 resp, err := client.CreateAuthor(context.Background(), req)
 
 ```
 
-See `examples/bookstore1`.
+See `examples/bookstore`.
 
 ### Use custom datatypes
 
@@ -75,3 +75,7 @@ func (r *GetAuthorsResp) ProcessRow(rowMap sal.RowMap) {
 	rowMap["tags"] = pq.Array(&r.Tags)
 }
 ``` 
+
+### Transaction
+
+todo

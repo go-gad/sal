@@ -25,6 +25,11 @@ const (
 	ExecOperation
 )
 
+const (
+	MethodNameTx      string = "Tx"
+	MethodNameBeginTx string = "BeginTx"
+)
+
 type generator struct {
 	buf    bytes.Buffer
 	indent string
@@ -37,10 +42,12 @@ func (g *generator) Generate(pkg *looker.Package, pkgName string) error {
 
 	g.p("import (")
 	g.p("%q", "context")
+	g.p("%q", "database/sql")
+	g.br()
 	g.p("%q", pkg.ImportPath.Path)
 	g.p("%q", "github.com/pkg/errors")
 	g.p("%q", "github.com/go-gad/sal")
-	g.p("%q", "database/sql")
+
 	g.p(")")
 
 	for _, intf := range pkg.Interfaces {
@@ -55,13 +62,17 @@ func (g *generator) Generate(pkg *looker.Package, pkgName string) error {
 func (g *generator) GenerateInterface(intf *looker.Interface) error {
 	implName := Prefix + intf.Name
 	g.p("type %v struct {", implName)
-	g.p("DB *sql.DB")
+	g.p("handler sal.QueryHandler")
 	g.p("}")
 
-	g.p("func New%v(db *sql.DB) *%v {", intf.Name, implName)
-	g.p("return &%v{DB: db}", implName)
+	g.p("func New%v(h sal.QueryHandler) *%v {", intf.Name, implName)
+	g.p("return &%v{handler: h}", implName)
 	g.p("}")
 	g.br()
+
+	g.GenerateBeginTx(implName, intf.Name)
+	g.br()
+	g.GenerateTx(implName)
 
 	for _, mtd := range intf.Methods {
 		if err := g.GenerateMethod(implName, mtd); err != nil {
@@ -80,6 +91,11 @@ func (pa prmArgs) String() string {
 }
 
 func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
+	switch mtd.Name {
+	case MethodNameBeginTx, MethodNameTx:
+		return nil
+	}
+
 	inArgs := make(prmArgs, 0, 2)
 	inArgs = append(inArgs, "ctx "+mtd.In[0].Name())
 	req := mtd.In[1]
@@ -117,7 +133,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 
 	switch operation {
 	case QueryOperation, QueryRowOperation:
-		g.p("rows, err := s.DB.Query(pgQuery, args...)")
+		g.p("rows, err := s.handler.QueryContext(ctx, pgQuery, args...)")
 		g.ifErr("failed to execute Query")
 		g.p("defer rows.Close()")
 		g.br()
@@ -126,7 +142,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.ifErr("failed to fetch columns")
 		g.br()
 	case ExecOperation:
-		g.p("_, err := s.DB.Exec(pgQuery, args...)")
+		g.p("_, err := s.handler.ExecContext(ctx, pgQuery, args...)")
 		g.p("if err != nil {")
 		g.p("return errors.Wrap(err, %q)", "failed to execute Exec")
 		g.p("}")
@@ -213,6 +229,33 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("}")
 
 	return nil
+}
+
+//todo: pass ImportElement instead of intfName
+func (g *generator) GenerateBeginTx(implName, intfName string) {
+	g.p("func (s *%s) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.%s, error) {", implName, intfName)
+	g.p("dbConn, ok := s.handler.(sal.TransactionBegin)")
+	g.p("if !ok {")
+	g.p("return nil, errors.New(%q)", "oops")
+	g.p("}")
+	g.br()
+	g.p("tx, err := dbConn.BeginTx(ctx, opts)")
+	g.ifErr("failed to start tx")
+	g.br()
+	g.p("// todo: copy settings, middlewares, options...")
+	g.p("newClient := NewStore(tx)")
+	g.br()
+	g.p("return newClient, nil")
+	g.p("}")
+}
+
+func (g *generator) GenerateTx(implName string) {
+	g.p("func (s *SalStore) Tx() sal.TxHandler {")
+	g.p("if tx, ok := s.handler.(sal.TxHandler); ok {")
+	g.p("return tx")
+	g.p("}")
+	g.p("return nil")
+	g.p("}")
 }
 
 func (g *generator) ifErr(msg string) {

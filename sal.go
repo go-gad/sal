@@ -1,6 +1,8 @@
 package sal
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"regexp"
 )
@@ -35,4 +37,27 @@ func ProcessQueryAndArgs(query string, reqMap RowMap) (string, []interface{}) {
 
 type ProcessRower interface {
 	ProcessRow(rowMap RowMap)
+}
+
+type Controller interface {
+	Tx() TxHandler
+}
+
+type TxHandler interface {
+	QueryHandler
+	TransactionEnd
+}
+
+type QueryHandler interface {
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+}
+
+type TransactionBegin interface {
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
+}
+
+type TransactionEnd interface {
+	Commit() error
+	Rollback() error
 }

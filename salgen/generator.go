@@ -63,10 +63,16 @@ func (g *generator) GenerateInterface(intf *looker.Interface) error {
 	implName := Prefix + intf.Name
 	g.p("type %v struct {", implName)
 	g.p("handler sal.QueryHandler")
+	g.p("ctrl *sal.Controller")
 	g.p("}")
 
-	g.p("func New%v(h sal.QueryHandler) *%v {", intf.Name, implName)
-	g.p("return &%v{handler: h}", implName)
+	g.p("func New%v(h sal.QueryHandler, options ...sal.ClientOption) *%v {", intf.Name, implName)
+	g.p("s := &%s{", implName)
+	g.p("handler: h,")
+	g.p("ctrl: sal.NewController(options...),")
+	g.p("}")
+	g.br()
+	g.p("return s")
 	g.p("}")
 	g.br()
 
@@ -112,6 +118,20 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	outArgs = append(outArgs, mtd.Out[len(mtd.Out)-1].Name())
 
 	g.p("func (s *%v) %v(%v) (%v) {", implName, mtd.Name, inArgs.String(), outArgs.String())
+	g.p("var (")
+	g.p("err error")
+	g.p("rawQuery = req.Query()")
+	g.p(")")
+	g.br()
+	g.p("for _, fn := range s.ctrl.BeforeQuery {")
+	g.p("var fnz sal.FinalizerFunc")
+	g.p("ctx, fnz = fn(ctx, rawQuery, req)")
+	g.p("if fnz != nil {")
+	g.p("defer func() { fnz(ctx, err) }()")
+	g.p("}")
+	g.p("}")
+	g.br()
+
 	g.p("var reqMap = make(sal.RowMap)")
 
 	if req.Kind() == reflect.Struct.String() {
@@ -128,7 +148,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		return errors.New("unsupported type of request variable")
 	}
 
-	g.p("pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)")
+	g.p("pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)")
 	g.br()
 
 	switch operation {
@@ -142,7 +162,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.ifErr("failed to fetch columns")
 		g.br()
 	case ExecOperation:
-		g.p("_, err := s.handler.ExecContext(ctx, pgQuery, args...)")
+		g.p("_, err = s.handler.ExecContext(ctx, pgQuery, args...)")
 		g.p("if err != nil {")
 		g.p("return errors.Wrap(err, %q)", "failed to execute Exec")
 		g.p("}")
@@ -157,7 +177,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 
 	if operation == QueryRowOperation {
 		g.p("if !rows.Next() {")
-		g.p("if err := rows.Err(); err != nil {")
+		g.p("if err = rows.Err(); err != nil {")
 		g.p("return nil, errors.Wrap(err, %q)", "rows error")
 		g.p("}")
 		g.p("return nil, sql.ErrNoRows")
@@ -211,7 +231,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	}
 	g.br()
 
-	g.p("if err := rows.Err(); err != nil {")
+	g.p("if err = rows.Err(); err != nil {")
 	g.p("return nil, errors.Wrap(err, %q)", "something failed during iteration")
 	g.p("}")
 	g.br()

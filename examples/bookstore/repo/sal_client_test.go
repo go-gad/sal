@@ -7,6 +7,7 @@ import (
 
 	"database/sql/driver"
 
+	"github.com/go-gad/sal"
 	"github.com/go-gad/sal/examples/bookstore"
 	"github.com/go-gad/sal/examples/bookstore/repo"
 	"github.com/lib/pq"
@@ -20,7 +21,14 @@ func TestSalStore_CreateAuthor(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	client := repo.NewStore(db)
+	b1 := func(ctx context.Context, query string, req interface{}) (context.Context, sal.FinalizerFunc) {
+		start := time.Now()
+		return ctx, func(ctx context.Context, err error) {
+			t.Logf("Query %q with req %#v took [%v] Error: %+v", query, req, time.Since(start), err)
+		}
+	}
+
+	client := repo.NewStore(db, sal.BeforeQuery(b1))
 
 	req := bookstore.CreateAuthorReq{Name: "foo", Desc: "Bar"}
 

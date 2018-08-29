@@ -109,7 +109,7 @@ func TestNewStoreController(t *testing.T) {
 	err = tx.UpdateAuthor(ctx, &req2)
 	assert.Nil(t, err)
 
-	err = tx.Commit()
+	err = tx.Tx().Commit()
 	assert.Nil(t, err)
 
 }

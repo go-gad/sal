@@ -11,15 +11,18 @@ import (
 )
 
 type SalStore struct {
-	DBH sal.DBHandler
+	handler sal.QueryHandler
 }
 
-func NewStore(dbh sal.DBHandler) *SalStore {
-	return &SalStore{DBH: dbh}
+func NewStore(h sal.QueryHandler) *SalStore {
+	return &SalStore{handler: h}
 }
 
 func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.Store, error) {
-	dbConn := s.DBH.(sal.TransactionBegin)
+	dbConn, ok := s.handler.(sal.TransactionBegin)
+	if !ok {
+		return nil, errors.New("oops")
+	}
 
 	tx, err := dbConn.BeginTx(ctx, opts)
 	if err != nil {
@@ -32,25 +35,10 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.
 	return newClient, nil
 }
 
-func (s *SalStore) Commit() error {
-	tx := s.DBH.(sal.TransactionEnd)
-
-	err := tx.Commit()
-	if err != nil {
-		return errors.Wrap(err, "failed to commit")
+func (s *SalStore) Tx() sal.TxHandler {
+	if tx, ok := s.handler.(sal.TxHandler); ok {
+		return tx
 	}
-
-	return nil
-}
-
-func (s *SalStore) Rollback() error {
-	tx := s.DBH.(sal.TransactionEnd)
-
-	err := tx.Rollback()
-	if err != nil {
-		return errors.Wrap(err, "failed to commit")
-	}
-
 	return nil
 }
 
@@ -61,7 +49,7 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
-	rows, err := s.DBH.Query(pgQuery, args...)
+	rows, err := s.handler.QueryContext(ctx, pgQuery, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute Query")
 	}
@@ -111,7 +99,7 @@ func (s *SalStore) GetAuthors(ctx context.Context, req bookstore.GetAuthorsReq) 
 
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
-	rows, err := s.DBH.Query(pgQuery, args...)
+	rows, err := s.handler.QueryContext(ctx, pgQuery, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute Query")
 	}
@@ -164,7 +152,7 @@ func (s *SalStore) UpdateAuthor(ctx context.Context, req *bookstore.UpdateAuthor
 
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
 
-	_, err := s.DBH.Exec(pgQuery, args...)
+	_, err := s.handler.ExecContext(ctx, pgQuery, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to execute Exec")
 	}

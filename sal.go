@@ -39,10 +39,18 @@ type ProcessRower interface {
 	ProcessRow(rowMap RowMap)
 }
 
-//todo: use methods with Context
-type DBHandler interface {
-	Query(query string, args ...interface{}) (*sql.Rows, error)
-	Exec(query string, args ...interface{}) (sql.Result, error)
+type Controller interface {
+	Tx() TxHandler
+}
+
+type TxHandler interface {
+	QueryHandler
+	TransactionEnd
+}
+
+type QueryHandler interface {
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 }
 
 type TransactionBegin interface {
@@ -52,11 +60,4 @@ type TransactionBegin interface {
 type TransactionEnd interface {
 	Commit() error
 	Rollback() error
-}
-
-type Controller interface {
-	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
-	Commit() error
-	Rollback() error
-	DBHandler() DBHandler
 }

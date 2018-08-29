@@ -2,6 +2,7 @@ package bookstore
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/go-gad/sal"
@@ -10,7 +11,7 @@ import (
 
 //go:generate salgen -destination=./repo/sal_client.go -package=repo github.com/go-gad/sal/examples/bookstore Store
 type Store interface {
-	Dup() Store
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, error)
 	sal.Controller
 
 	CreateAuthor(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)

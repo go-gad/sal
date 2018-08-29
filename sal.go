@@ -39,7 +39,7 @@ type ProcessRower interface {
 	ProcessRow(rowMap RowMap)
 }
 
-type Controller interface {
+type Transaction interface {
 	Tx() TxHandler
 }
 
@@ -61,3 +61,27 @@ type TransactionEnd interface {
 	Commit() error
 	Rollback() error
 }
+
+type Controller struct {
+	BeforeQuery []BeforeQueryFunc
+}
+
+func NewController(options ...ClientOption) *Controller {
+	ctrl := &Controller{
+		BeforeQuery: []BeforeQueryFunc{},
+	}
+	for _, option := range options {
+		option(ctrl)
+	}
+	return ctrl
+}
+
+type ClientOption func(ctrl *Controller)
+
+func BeforeQuery(before ...BeforeQueryFunc) ClientOption {
+	return func(ctrl *Controller) { ctrl.BeforeQuery = append(ctrl.BeforeQuery, before...) }
+}
+
+type BeforeQueryFunc func(ctx context.Context, query string, args []interface{}) (context.Context, AfterQueryFunc)
+
+type AfterQueryFunc func(ctx context.Context, err error)

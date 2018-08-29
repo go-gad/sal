@@ -12,10 +12,16 @@ import (
 
 type SalStore struct {
 	handler sal.QueryHandler
+	ctrl    *sal.Controller
 }
 
-func NewStore(h sal.QueryHandler) *SalStore {
-	return &SalStore{handler: h}
+func NewStore(h sal.QueryHandler, options ...sal.ClientOption) *SalStore {
+	s := &SalStore{
+		handler: h,
+		ctrl:    sal.NewController(options...),
+	}
+
+	return s
 }
 
 func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.Store, error) {
@@ -48,6 +54,13 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 	reqMap["Desc"] = &req.Desc
 
 	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
+
+	afterQuery := []sal.AfterQueryFunc{}
+	for _, fn := range s.ctrl.BeforeQuery {
+		var afterFn sal.AfterQueryFunc
+		ctx, afterFn = fn(ctx, pgQuery, args)
+		afterQuery = append([]sal.AfterQueryFunc{afterFn}, afterQuery...)
+	}
 
 	rows, err := s.handler.QueryContext(ctx, pgQuery, args...)
 	if err != nil {

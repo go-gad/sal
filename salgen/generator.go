@@ -162,7 +162,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.ifErr("failed to fetch columns")
 		g.br()
 	case ExecOperation:
-		g.p("_, err := s.handler.ExecContext(ctx, pgQuery, args...)")
+		g.p("_, err = s.handler.ExecContext(ctx, pgQuery, args...)")
 		g.p("if err != nil {")
 		g.p("return errors.Wrap(err, %q)", "failed to execute Exec")
 		g.p("}")

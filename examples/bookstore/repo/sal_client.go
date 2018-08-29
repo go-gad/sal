@@ -110,13 +110,26 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 }
 
 func (s *SalStore) GetAuthors(ctx context.Context, req bookstore.GetAuthorsReq) ([]*bookstore.GetAuthorsResp, error) {
+	var (
+		err      error
+		rawQuery = req.Query()
+	)
+
+	for _, fn := range s.ctrl.BeforeQuery {
+		var fnz sal.FinalizerFunc
+		ctx, fnz = fn(ctx, rawQuery, req)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
 	var reqMap = make(sal.RowMap)
 	reqMap["id"] = &req.ID
 	reqMap["tags"] = &req.Tags
 
 	req.ProcessRow(reqMap)
 
-	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
+	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
 	rows, err := s.handler.QueryContext(ctx, pgQuery, args...)
 	if err != nil {
@@ -156,7 +169,7 @@ func (s *SalStore) GetAuthors(ctx context.Context, req bookstore.GetAuthorsReq) 
 		list = append(list, &resp)
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "something failed during iteration")
 	}
 
@@ -164,14 +177,27 @@ func (s *SalStore) GetAuthors(ctx context.Context, req bookstore.GetAuthorsReq) 
 }
 
 func (s *SalStore) UpdateAuthor(ctx context.Context, req *bookstore.UpdateAuthorReq) error {
+	var (
+		err      error
+		rawQuery = req.Query()
+	)
+
+	for _, fn := range s.ctrl.BeforeQuery {
+		var fnz sal.FinalizerFunc
+		ctx, fnz = fn(ctx, rawQuery, req)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
 	var reqMap = make(sal.RowMap)
 	reqMap["ID"] = &req.ID
 	reqMap["Name"] = &req.Name
 	reqMap["Desc"] = &req.Desc
 
-	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
+	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
-	_, err := s.handler.ExecContext(ctx, pgQuery, args...)
+	_, err = s.handler.ExecContext(ctx, pgQuery, args...)
 	if err != nil {
 		return errors.Wrap(err, "failed to execute Exec")
 	}

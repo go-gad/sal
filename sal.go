@@ -39,7 +39,7 @@ type ProcessRower interface {
 	ProcessRow(rowMap RowMap)
 }
 
-type Controller interface {
+type Transaction interface {
 	Tx() TxHandler
 }
 

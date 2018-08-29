@@ -58,9 +58,7 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 		var fnz sal.FinalizerFunc
 		ctx, fnz = fn(ctx, rawQuery, req)
 		if fnz != nil {
-			defer func() {
-				fnz(ctx, err)
-			}()
+			defer func() { fnz(ctx, err) }()
 		}
 	}
 
@@ -82,7 +80,7 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 	}
 
 	if !rows.Next() {
-		if err := rows.Err(); err != nil {
+		if err = rows.Err(); err != nil {
 			return nil, errors.Wrap(err, "rows error")
 		}
 		return nil, sql.ErrNoRows

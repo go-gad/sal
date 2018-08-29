@@ -21,10 +21,10 @@ func TestSalStore_CreateAuthor(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	b1 := func(ctx context.Context, query string, args []interface{}) (context.Context, sal.AfterQueryFunc) {
-		t.Logf("Query %q with args %#v", query, args)
+	b1 := func(ctx context.Context, query string, req interface{}) (context.Context, sal.FinalizerFunc) {
+		start := time.Now()
 		return ctx, func(ctx context.Context, err error) {
-			t.Logf("Error: %+v", err)
+			t.Logf("Query %q with args %#v took [%v] Error: %+v", query, req, time.Since(start), err)
 		}
 	}
 

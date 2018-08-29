@@ -82,6 +82,6 @@ func BeforeQuery(before ...BeforeQueryFunc) ClientOption {
 	return func(ctrl *Controller) { ctrl.BeforeQuery = append(ctrl.BeforeQuery, before...) }
 }
 
-type BeforeQueryFunc func(ctx context.Context, query string, args []interface{}) (context.Context, AfterQueryFunc)
+type BeforeQueryFunc func(ctx context.Context, query string, req interface{}) (context.Context, FinalizerFunc)
 
-type AfterQueryFunc func(ctx context.Context, err error)
+type FinalizerFunc func(ctx context.Context, err error)

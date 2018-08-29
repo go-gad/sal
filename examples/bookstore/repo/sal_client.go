@@ -49,18 +49,26 @@ func (s *SalStore) Tx() sal.TxHandler {
 }
 
 func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorReq) (*bookstore.CreateAuthorResp, error) {
+	var (
+		err      error
+		rawQuery = req.Query()
+	)
+
+	for _, fn := range s.ctrl.BeforeQuery {
+		var fnz sal.FinalizerFunc
+		ctx, fnz = fn(ctx, rawQuery, req)
+		if fnz != nil {
+			defer func() {
+				fnz(ctx, err)
+			}()
+		}
+	}
+
 	var reqMap = make(sal.RowMap)
 	reqMap["Name"] = &req.Name
 	reqMap["Desc"] = &req.Desc
 
-	pgQuery, args := sal.ProcessQueryAndArgs(req.Query(), reqMap)
-
-	afterQuery := []sal.AfterQueryFunc{}
-	for _, fn := range s.ctrl.BeforeQuery {
-		var afterFn sal.AfterQueryFunc
-		ctx, afterFn = fn(ctx, pgQuery, args)
-		afterQuery = append([]sal.AfterQueryFunc{afterFn}, afterQuery...)
-	}
+	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
 	rows, err := s.handler.QueryContext(ctx, pgQuery, args...)
 	if err != nil {
@@ -96,7 +104,7 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 		return nil, errors.Wrap(err, "failed to scan row")
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "something failed during iteration")
 	}
 

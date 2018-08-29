@@ -53,3 +53,10 @@ type TransactionEnd interface {
 	Commit() error
 	Rollback() error
 }
+
+type Controller interface {
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
+	Commit() error
+	Rollback() error
+	DBHandler() DBHandler
+}

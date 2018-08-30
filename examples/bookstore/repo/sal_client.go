@@ -64,6 +64,7 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 	reqMap["Desc"] = &req.Desc
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "QueryRow")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
@@ -133,6 +134,7 @@ func (s *SalStore) GetAuthors(ctx context.Context, req bookstore.GetAuthorsReq) 
 	req.ProcessRow(reqMap)
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Query")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
@@ -205,6 +207,7 @@ func (s *SalStore) UpdateAuthor(ctx context.Context, req *bookstore.UpdateAuthor
 	reqMap["Desc"] = &req.Desc
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Exec")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 

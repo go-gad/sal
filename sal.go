@@ -150,6 +150,7 @@ type contextKey int
 
 const (
 	ContextKeyTxOpened contextKey = iota
+	ContextKeyOperationType
 )
 
 type ClientOption func(ctrl *Controller)
@@ -171,6 +172,7 @@ const (
 	OperationTypeBegin
 	OperationTypeCommit
 	OperationTypeRollback
+	OperationTypePrepare
 )
 
 var operationTypeNames = []string{
@@ -180,6 +182,7 @@ var operationTypeNames = []string{
 	"Begin",
 	"Commit",
 	"Rollback",
+	"Prepare",
 }
 
 func (op OperationType) String() string {

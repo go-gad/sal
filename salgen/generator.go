@@ -133,6 +133,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	}
 
 	g.p("ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)")
+	g.p("ctx = context.WithValue(ctx, sal.ContextKeyOperationType, %q)", operation.String())
 	g.br()
 
 	g.p("pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)")

@@ -76,6 +76,7 @@ type Controller struct {
 func NewController(options ...ClientOption) *Controller {
 	ctrl := &Controller{
 		BeforeQuery: []BeforeQueryFunc{},
+		CacheStmts:  make(map[string]*sql.Stmt),
 	}
 	for _, option := range options {
 		option(ctrl)
@@ -128,9 +129,9 @@ func (ctrl *Controller) PrepareStmt(ctx context.Context, qh QueryHandler, query 
 	if stmt == nil {
 		stmt, err = ctrl.prepareStmt(ctx, qh, query)
 		if err != nil {
-
 			return nil, errors.Wrapf(err, "failed to prepare stmt on query %q", query)
 		}
+		ctrl.putStmt(query, stmt)
 	}
 
 	txOpened, _ := ctx.Value(ContextKeyTxOpened).(bool)

@@ -35,8 +35,8 @@ func main() {
 		defer f.Close()
 		dst = f
 	}
-
-	code, err := GenerateCode(*packageName, srcpkg, symbols)
+	dstPkg := looker.ImportElement{Path: *packageName}
+	code, err := GenerateCode(dstPkg, srcpkg, symbols)
 	if err != nil {
 		log.Fatalf("Failed to generate a code: %+v", err)
 	}
@@ -47,7 +47,7 @@ func main() {
 
 }
 
-func GenerateCode(pkgname string, srcpkg string, symbols []string) ([]byte, error) {
+func GenerateCode(dstPkg looker.ImportElement, srcpkg string, symbols []string) ([]byte, error) {
 	pkg, err := looker.Reflect(srcpkg, symbols)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to reflect package")
@@ -55,7 +55,7 @@ func GenerateCode(pkgname string, srcpkg string, symbols []string) ([]byte, erro
 
 	g := new(generator)
 
-	if err := g.Generate(pkg, pkgname); err != nil {
+	if err := g.Generate(pkg, dstPkg); err != nil {
 		return nil, errors.Wrap(err, "failed generating mock")
 	}
 

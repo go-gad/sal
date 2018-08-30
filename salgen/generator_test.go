@@ -4,13 +4,15 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/go-gad/sal/looker"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 var update bool = false
 
 func TestGenerateCode(t *testing.T) {
-	code, err := GenerateCode("repo", "github.com/go-gad/sal/examples/bookstore", []string{"Store"})
+	dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/examples/bookstore/repo"}
+	code, err := GenerateCode(dstPkg, "github.com/go-gad/sal/examples/bookstore", []string{"Store"})
 	if err != nil {
 		t.Fatalf("Failed to generate a code: %+v", err)
 	}

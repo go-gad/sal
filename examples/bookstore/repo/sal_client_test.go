@@ -25,7 +25,8 @@ func TestSalStore_CreateAuthor(t *testing.T) {
 		start := time.Now()
 		return ctx, func(ctx context.Context, err error) {
 			t.Logf(
-				"Opeartion %q: %q with req %#v took [%v] inTx[%v] Error: %+v",
+				"%q > Opeartion %q: %q with req %#v took [%v] inTx[%v] Error: %+v",
+				ctx.Value(sal.ContextKeyMethodName),
 				ctx.Value(sal.ContextKeyOperationType),
 				query,
 				req,
@@ -113,7 +114,8 @@ func TestNewStoreController(t *testing.T) {
 		start := time.Now()
 		return ctx, func(ctx context.Context, err error) {
 			t.Logf(
-				"Opeartion %q: %q with req %#v took [%v] inTx[%v] Error: %+v",
+				"%q > Opeartion %q: %q with req %#v took [%v] inTx[%v] Error: %+v",
+				ctx.Value(sal.ContextKeyMethodName),
 				ctx.Value(sal.ContextKeyOperationType),
 				query,
 				req,

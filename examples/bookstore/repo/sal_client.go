@@ -38,6 +38,7 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Begin")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "BeginTx")
 
 	for _, fn := range s.ctrl.BeforeQuery {
 		var fnz sal.FinalizerFunc
@@ -151,6 +152,7 @@ func (s *SalStore) GetAuthors(ctx context.Context, req bookstore.GetAuthorsReq) 
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Query")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "GetAuthors")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
@@ -224,6 +226,7 @@ func (s *SalStore) UpdateAuthor(ctx context.Context, req *bookstore.UpdateAuthor
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Exec")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "UpdateAuthor")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 

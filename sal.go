@@ -161,3 +161,11 @@ func BeforeQuery(before ...BeforeQueryFunc) ClientOption {
 type BeforeQueryFunc func(ctx context.Context, query string, req interface{}) (context.Context, FinalizerFunc)
 
 type FinalizerFunc func(ctx context.Context, err error)
+
+type OperationType int
+
+const (
+	QueryRowOperation OperationType = iota
+	QueryOperation
+	ExecOperation
+)

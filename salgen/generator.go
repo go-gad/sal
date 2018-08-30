@@ -9,20 +9,13 @@ import (
 
 	"reflect"
 
+	"github.com/go-gad/sal"
 	"github.com/go-gad/sal/looker"
 	"github.com/pkg/errors"
 )
 
 const (
 	Prefix = "Sal"
-)
-
-type OperationType int
-
-const (
-	QueryRowOperation OperationType = iota
-	QueryOperation
-	ExecOperation
 )
 
 const (
@@ -114,7 +107,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	outArgs := make(prmArgs, 0, 2)
 
 	resp := mtd.Out[0]
-	if operation != ExecOperation {
+	if operation != sal.ExecOperation {
 		outArgs = append(outArgs, elementType(resp.Pointer(), resp.Name()))
 	}
 	outArgs = append(outArgs, mtd.Out[len(mtd.Out)-1].Name())
@@ -148,9 +141,9 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)")
 	g.p("if err != nil {")
 	switch operation {
-	case QueryOperation, QueryRowOperation:
+	case sal.QueryOperation, sal.QueryRowOperation:
 		g.p("return nil, errors.WithStack(err)")
-	case ExecOperation:
+	case sal.ExecOperation:
 		g.p("return errors.WithStack(err)")
 	}
 	g.p("}")
@@ -166,7 +159,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.br()
 
 	switch operation {
-	case QueryOperation, QueryRowOperation:
+	case sal.QueryOperation, sal.QueryRowOperation:
 		g.p("rows, err := stmt.QueryContext(ctx, args...)")
 		g.ifErr("failed to execute Query")
 		g.p("defer rows.Close()")
@@ -175,7 +168,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.p("cols, err := rows.Columns()")
 		g.ifErr("failed to fetch columns")
 		g.br()
-	case ExecOperation:
+	case sal.ExecOperation:
 		g.p("_, err = stmt.ExecContext(ctx, args...)")
 		g.p("if err != nil {")
 		g.p("return errors.Wrap(err, %q)", "failed to execute Exec")
@@ -183,13 +176,13 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.br()
 	}
 
-	if operation == ExecOperation {
+	if operation == sal.ExecOperation {
 		g.p("return nil")
 		g.p("}")
 		return nil
 	}
 
-	if operation == QueryRowOperation {
+	if operation == sal.QueryRowOperation {
 		g.p("if !rows.Next() {")
 		g.p("if err = rows.Err(); err != nil {")
 		g.p("return nil, errors.Wrap(err, %q)", "rows error")
@@ -200,7 +193,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	}
 
 	var respRow looker.Parameter
-	if operation == QueryOperation {
+	if operation == sal.QueryOperation {
 		g.p("var list = make(%s, 0)", resp.Name())
 		g.br()
 		g.p("for rows.Next() {")
@@ -235,7 +228,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("if err = rows.Scan(dest...); err != nil {")
 	g.p("return nil, errors.Wrap(err, %q)", "failed to scan row")
 	g.p("}")
-	if operation == QueryOperation {
+	if operation == sal.QueryOperation {
 		if respRow.Pointer() {
 			respRowStr = "&resp"
 		}
@@ -251,7 +244,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.br()
 
 	respStr := "resp"
-	if operation == QueryOperation {
+	if operation == sal.QueryOperation {
 		respStr = "list"
 	}
 
@@ -327,12 +320,12 @@ func (g *generator) br() {
 	g.p("")
 }
 
-func calcOperationType(prms looker.Parameters) OperationType {
+func calcOperationType(prms looker.Parameters) sal.OperationType {
 	if len(prms) == 1 {
-		return ExecOperation
+		return sal.ExecOperation
 	}
 	if prms[0].Kind() == reflect.Slice.String() {
-		return QueryOperation
+		return sal.QueryOperation
 	}
-	return QueryRowOperation
+	return sal.QueryRowOperation
 }

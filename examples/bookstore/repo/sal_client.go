@@ -32,6 +32,9 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.
 		return nil, errors.New("oops")
 	}
 
+	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Begin")
+
 	// todo middleware
 	tx, err := dbConn.BeginTx(ctx, opts)
 	if err != nil {

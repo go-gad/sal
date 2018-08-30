@@ -267,6 +267,11 @@ func (g *generator) GenerateBeginTx(implName, intfName string) {
 	g.p("return nil, errors.New(%q)", "oops")
 	g.p("}")
 	g.br()
+
+	g.p("ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)")
+	g.p("ctx = context.WithValue(ctx, sal.ContextKeyOperationType, %q)", sal.OperationTypeBegin.String())
+	g.br()
+
 	g.p("// todo middleware")
 	g.p("tx, err := dbConn.BeginTx(ctx, opts)")
 	g.ifErr("failed to start tx")

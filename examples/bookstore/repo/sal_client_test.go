@@ -68,11 +68,13 @@ func TestSalStore_GetAuthors(t *testing.T) {
 		rows = rows.AddRow(v.ID, v.CreatedAt, v.Name, v.Desc, dv(v.Tags))
 	}
 
+	mock.ExpectPrepare(`SELECT id, created_at, name,.+`)
 	mock.ExpectQuery(`SELECT id, created_at, name,.+`).WithArgs(req.ID, pq.Array(req.Tags)).WillReturnRows(rows)
 
 	resp, err := client.GetAuthors(context.Background(), req)
 	assert.Equal(t, expResp, resp)
 	assert.Nil(t, err)
+	assert.Nil(t, mock.ExpectationsWereMet())
 }
 
 func TestSalStore_UpdateAuthor(t *testing.T) {
@@ -84,10 +86,13 @@ func TestSalStore_UpdateAuthor(t *testing.T) {
 	client := repo.NewStore(db)
 
 	req := bookstore.UpdateAuthorReq{ID: 123, Name: "John", Desc: "foo-bar"}
+
+	mock.ExpectPrepare("UPDATE authors SET.+")
 	mock.ExpectExec("UPDATE authors SET.+").WithArgs(req.Name, req.Desc, req.ID).WillReturnResult(sqlmock.NewResult(0, 1))
 
 	err = client.UpdateAuthor(context.Background(), &req)
 	assert.Nil(t, err)
+	assert.Nil(t, mock.ExpectationsWereMet())
 }
 
 func TestNewStoreController(t *testing.T) {
@@ -107,6 +112,8 @@ func TestNewStoreController(t *testing.T) {
 	mock.ExpectPrepare(`INSERT INTO authors .+`) // on connection
 	mock.ExpectPrepare(`INSERT INTO authors .+`) // on transaction
 	mock.ExpectQuery(`INSERT INTO authors .+`).WithArgs(req1.Name, req1.Desc).WillReturnRows(rows)
+	mock.ExpectPrepare("UPDATE authors SET.+") // on connection
+	mock.ExpectPrepare("UPDATE authors SET.+") // on transaction
 	mock.ExpectExec("UPDATE authors SET.+").WithArgs(req2.Name, req2.Desc, req2.ID).WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 

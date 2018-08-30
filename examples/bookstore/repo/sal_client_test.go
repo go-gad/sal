@@ -34,10 +34,12 @@ func TestSalStore_CreateAuthor(t *testing.T) {
 
 	expResp := bookstore.CreateAuthorResp{ID: 1, CreatedAt: time.Now().Truncate(time.Millisecond)}
 	rows := sqlmock.NewRows([]string{"ID", "CreatedAt"}).AddRow(expResp.ID, expResp.CreatedAt)
+	mock.ExpectPrepare(`INSERT INTO authors .+`)
 	mock.ExpectQuery(`INSERT INTO authors .+`).WithArgs(req.Name, req.Desc).WillReturnRows(rows)
 
 	resp, err := client.CreateAuthor(context.Background(), req)
 	assert.Equal(t, &expResp, resp)
+	assert.Nil(t, mock.ExpectationsWereMet())
 }
 
 func dv(a []int64) driver.Value {

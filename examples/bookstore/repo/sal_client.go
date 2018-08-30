@@ -11,14 +11,16 @@ import (
 )
 
 type SalStore struct {
-	handler sal.QueryHandler
-	ctrl    *sal.Controller
+	handler  sal.QueryHandler
+	ctrl     *sal.Controller
+	txOpened bool
 }
 
 func NewStore(h sal.QueryHandler, options ...sal.ClientOption) *SalStore {
 	s := &SalStore{
-		handler: h,
-		ctrl:    sal.NewController(options...),
+		handler:  h,
+		ctrl:     sal.NewController(options...),
+		txOpened: false,
 	}
 
 	return s
@@ -29,14 +31,17 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.
 	if !ok {
 		return nil, errors.New("oops")
 	}
-
+	// todo middleware
 	tx, err := dbConn.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to start tx")
 	}
 
-	// todo: copy settings, middlewares, options...
-	newClient := NewStore(tx)
+	newClient := &SalStore{
+		handler:  tx,
+		ctrl:     s.ctrl,
+		txOpened: true,
+	}
 
 	return newClient, nil
 }
@@ -52,7 +57,19 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 	var (
 		err      error
 		rawQuery = req.Query()
+		reqMap   = make(sal.RowMap)
 	)
+	reqMap["Name"] = &req.Name
+	reqMap["Desc"] = &req.Desc
+
+	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+
+	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
+
+	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 
 	for _, fn := range s.ctrl.BeforeQuery {
 		var fnz sal.FinalizerFunc
@@ -62,13 +79,7 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 		}
 	}
 
-	var reqMap = make(sal.RowMap)
-	reqMap["Name"] = &req.Name
-	reqMap["Desc"] = &req.Desc
-
-	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
-
-	rows, err := s.handler.QueryContext(ctx, pgQuery, args...)
+	rows, err := stmt.QueryContext(ctx, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute Query")
 	}

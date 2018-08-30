@@ -105,10 +105,11 @@ func TestLookAtParameter2(t *testing.T) {
 		},
 	} {
 		t.Run(tc.test, func(t *testing.T) {
+			dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata"}
 			assert := assert.New(t)
 			prm := looker.LookAtParameter(tc.typ)
 			assert.Equal(tc.kind, prm.Kind())
-			assert.Equal(tc.name, prm.Name())
+			assert.Equal(tc.name, prm.Name(dstPkg.Path))
 			assert.Equal(tc.ptr, prm.Pointer())
 		})
 	}

@@ -31,14 +31,25 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.
 	if !ok {
 		return nil, errors.New("oops")
 	}
-
+	var (
+		err error
+		tx  *sql.Tx
+	)
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Begin")
 
-	// todo middleware
-	tx, err := dbConn.BeginTx(ctx, opts)
+	for _, fn := range s.ctrl.BeforeQuery {
+		var fnz sal.FinalizerFunc
+		ctx, fnz = fn(ctx, "BEGIN", nil)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
+	tx, err = dbConn.BeginTx(ctx, opts)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to start tx")
+		err = errors.Wrap(err, "failed to start tx")
+		return nil, err
 	}
 
 	newClient := &SalStore{

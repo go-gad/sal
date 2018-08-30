@@ -165,7 +165,23 @@ type FinalizerFunc func(ctx context.Context, err error)
 type OperationType int
 
 const (
-	QueryRowOperation OperationType = iota
-	QueryOperation
-	ExecOperation
+	OperationTypeQueryRow OperationType = iota
+	OperationTypeQuery
+	OperationTypeExec
+	OperationTypeBegin
+	OperationTypeCommit
+	OperationTypeRollback
 )
+
+var operationTypeNames = []string{
+	"QueryRow",
+	"Query",
+	"Exec",
+	"Begin",
+	"Commit",
+	"Rollback",
+}
+
+func (op OperationType) String() string {
+	return operationTypeNames[op]
+}

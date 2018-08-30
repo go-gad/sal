@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
+	"go/build"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -26,20 +27,20 @@ func Reflect(importPath string, symbols []string) (*Package, error) {
 	}
 	//fmt.Printf("PROGRAMM \n%s\n----------\n", string(program))
 
-	//wd, _ := os.Getwd()
+	wd, _ := os.Getwd()
 
-	//// Try to run the program in the same directory as the input package.
-	//if p, err := build.Import(importPath, wd, build.FindOnly); err == nil {
-	//	dir := p.Dir
-	//	if p, err := buildAndRun(program, dir); err == nil {
-	//		return p, nil
-	//	}
-	//}
-	//
-	//// Since that didn't work, try to run it in the current working directory.
-	//if p, err := buildAndRun(program, wd); err == nil {
-	//	return p, nil
-	//}
+	// Try to run the program in the same directory as the input package.
+	if p, err := build.Import(importPath, wd, build.FindOnly); err == nil {
+		dir := p.Dir
+		if p, err := buildAndRun(program, dir); err == nil {
+			return p, nil
+		}
+	}
+
+	// Since that didn't work, try to run it in the current working directory.
+	if p, err := buildAndRun(program, wd); err == nil {
+		return p, nil
+	}
 
 	// Since that didn't work, try to run it in a standard temp directory.
 	return buildAndRun(program, "")

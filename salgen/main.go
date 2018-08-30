@@ -26,6 +26,12 @@ func main() {
 		symbols = strings.Split(flag.Arg(1), ",")
 	)
 
+	dstPkg := looker.ImportElement{Path: *packageName}
+	code, err := GenerateCode(dstPkg, srcpkg, symbols)
+	if err != nil {
+		log.Fatalf("Failed to generate a code: %+v", err)
+	}
+
 	dst := os.Stdout
 	if len(*destination) > 0 {
 		f, err := os.Create(*destination)
@@ -34,11 +40,6 @@ func main() {
 		}
 		defer f.Close()
 		dst = f
-	}
-	dstPkg := looker.ImportElement{Path: *packageName}
-	code, err := GenerateCode(dstPkg, srcpkg, symbols)
-	if err != nil {
-		log.Fatalf("Failed to generate a code: %+v", err)
 	}
 
 	if _, err := dst.Write(code); err != nil {

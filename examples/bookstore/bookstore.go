@@ -9,7 +9,7 @@ import (
 	"github.com/lib/pq"
 )
 
-//go:generate salgen -destination=./repo/sal_client.go -package=github.com/go-gad/sal/examples/bookstore github.com/go-gad/sal/examples/bookstore Store
+//go:generate salgen -destination=./sal_client.go -package=github.com/go-gad/sal/examples/bookstore github.com/go-gad/sal/examples/bookstore Store
 type Store interface {
 	BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, error)
 	sal.Transaction

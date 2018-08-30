@@ -24,7 +24,15 @@ func TestSalStore_CreateAuthor(t *testing.T) {
 	b1 := func(ctx context.Context, query string, req interface{}) (context.Context, sal.FinalizerFunc) {
 		start := time.Now()
 		return ctx, func(ctx context.Context, err error) {
-			t.Logf("Query %q with req %#v took [%v] Error: %+v", query, req, time.Since(start), err)
+			t.Logf(
+				"Opeartion %q: %q with req %#v took [%v] inTx[%v] Error: %+v",
+				ctx.Value(sal.ContextKeyOperationType),
+				query,
+				req,
+				time.Since(start),
+				ctx.Value(sal.ContextKeyTxOpened),
+				err,
+			)
 		}
 	}
 

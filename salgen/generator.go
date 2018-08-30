@@ -64,12 +64,14 @@ func (g *generator) GenerateInterface(intf *looker.Interface) error {
 	g.p("type %v struct {", implName)
 	g.p("handler sal.QueryHandler")
 	g.p("ctrl *sal.Controller")
+	g.p("txOpened bool")
 	g.p("}")
 
 	g.p("func New%v(h sal.QueryHandler, options ...sal.ClientOption) *%v {", intf.Name, implName)
 	g.p("s := &%s{", implName)
 	g.p("handler: h,")
 	g.p("ctrl: sal.NewController(options...),")
+	g.p("txOpened: false,")
 	g.p("}")
 	g.br()
 	g.p("return s")
@@ -121,19 +123,8 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("var (")
 	g.p("err error")
 	g.p("rawQuery = req.Query()")
+	g.p("reqMap = make(sal.RowMap)")
 	g.p(")")
-	g.br()
-	g.p("for _, fn := range s.ctrl.BeforeQuery {")
-	g.p("var fnz sal.FinalizerFunc")
-	g.p("ctx, fnz = fn(ctx, rawQuery, req)")
-	g.p("if fnz != nil {")
-	g.p("defer func() { fnz(ctx, err) }()")
-	g.p("}")
-	g.p("}")
-	g.br()
-
-	g.p("var reqMap = make(sal.RowMap)")
-
 	if req.Kind() == reflect.Struct.String() {
 		reqSt := req.(*looker.StructElement)
 		for _, field := range reqSt.Fields {
@@ -148,12 +139,35 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		return errors.New("unsupported type of request variable")
 	}
 
+	g.p("ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)")
+	g.br()
+
 	g.p("pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)")
+	g.br()
+
+	g.p("stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)")
+	g.p("if err != nil {")
+	switch operation {
+	case QueryOperation, QueryRowOperation:
+		g.p("return nil, errors.WithStack(err)")
+	case ExecOperation:
+		g.p("return errors.WithStack(err)")
+	}
+	g.p("}")
+	g.br()
+
+	g.p("for _, fn := range s.ctrl.BeforeQuery {")
+	g.p("var fnz sal.FinalizerFunc")
+	g.p("ctx, fnz = fn(ctx, rawQuery, req)")
+	g.p("if fnz != nil {")
+	g.p("defer func() { fnz(ctx, err) }()")
+	g.p("}")
+	g.p("}")
 	g.br()
 
 	switch operation {
 	case QueryOperation, QueryRowOperation:
-		g.p("rows, err := s.handler.QueryContext(ctx, pgQuery, args...)")
+		g.p("rows, err := stmt.QueryContext(ctx, args...)")
 		g.ifErr("failed to execute Query")
 		g.p("defer rows.Close()")
 		g.br()
@@ -162,7 +176,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.ifErr("failed to fetch columns")
 		g.br()
 	case ExecOperation:
-		g.p("_, err = s.handler.ExecContext(ctx, pgQuery, args...)")
+		g.p("_, err = stmt.ExecContext(ctx, args...)")
 		g.p("if err != nil {")
 		g.p("return errors.Wrap(err, %q)", "failed to execute Exec")
 		g.p("}")
@@ -259,11 +273,15 @@ func (g *generator) GenerateBeginTx(implName, intfName string) {
 	g.p("return nil, errors.New(%q)", "oops")
 	g.p("}")
 	g.br()
+	g.p("// todo middleware")
 	g.p("tx, err := dbConn.BeginTx(ctx, opts)")
 	g.ifErr("failed to start tx")
 	g.br()
-	g.p("// todo: copy settings, middlewares, options...")
-	g.p("newClient := NewStore(tx)")
+	g.p("newClient := &%s{", implName)
+	g.p("handler: tx,")
+	g.p("ctrl: s.ctrl,")
+	g.p("txOpened: true,")
+	g.p("}")
 	g.br()
 	g.p("return newClient, nil")
 	g.p("}")

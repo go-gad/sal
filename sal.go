@@ -152,6 +152,7 @@ type contextKey int
 const (
 	ContextKeyTxOpened contextKey = iota
 	ContextKeyOperationType
+	ContextKeyMethodName
 )
 
 type ClientOption func(ctrl *Controller)

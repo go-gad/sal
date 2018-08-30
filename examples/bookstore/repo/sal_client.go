@@ -80,6 +80,7 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "QueryRow")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "CreateAuthor")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 

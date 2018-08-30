@@ -150,13 +150,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("}")
 	g.br()
 
-	g.p("for _, fn := range s.ctrl.BeforeQuery {")
-	g.p("var fnz sal.FinalizerFunc")
-	g.p("ctx, fnz = fn(ctx, rawQuery, req)")
-	g.p("if fnz != nil {")
-	g.p("defer func() { fnz(ctx, err) }()")
-	g.p("}")
-	g.p("}")
+	g.beforeQueryHook("rawQuery", "req")
 	g.br()
 
 	switch operation {
@@ -266,15 +260,24 @@ func (g *generator) GenerateBeginTx(implName, intfName string) {
 	g.p("if !ok {")
 	g.p("return nil, errors.New(%q)", "oops")
 	g.p("}")
+	g.p("var (")
+	g.p("err error")
+	g.p("tx  *sql.Tx")
+	g.p(")")
 	g.br()
 
 	g.p("ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)")
 	g.p("ctx = context.WithValue(ctx, sal.ContextKeyOperationType, %q)", sal.OperationTypeBegin.String())
 	g.br()
 
-	g.p("// todo middleware")
-	g.p("tx, err := dbConn.BeginTx(ctx, opts)")
-	g.ifErr("failed to start tx")
+	g.beforeQueryHook(`"BEGIN"`, "nil")
+	g.br()
+
+	g.p("tx, err = dbConn.BeginTx(ctx, opts)")
+	g.p("if err != nil {")
+	g.p("err = errors.Wrap(err, %q)", "failed to start tx")
+	g.p("return nil, err")
+	g.p("}")
 	g.br()
 	g.p("newClient := &%s{", implName)
 	g.p("handler: tx,")
@@ -298,6 +301,16 @@ func (g *generator) GenerateTx(implName string) {
 func (g *generator) ifErr(msg string) {
 	g.p("if err != nil {")
 	g.p("return nil, errors.Wrap(err, %q)", msg)
+	g.p("}")
+}
+
+func (g *generator) beforeQueryHook(q, r string) {
+	g.p("for _, fn := range s.ctrl.BeforeQuery {")
+	g.p("var fnz sal.FinalizerFunc")
+	g.p("ctx, fnz = fn(ctx, %s, %s)", q, r)
+	g.p("if fnz != nil {")
+	g.p("defer func() { fnz(ctx, err) }()")
+	g.p("}")
 	g.p("}")
 }
 

@@ -35,6 +35,7 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.
 		err error
 		tx  *sql.Tx
 	)
+
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Begin")
 

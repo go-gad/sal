@@ -103,6 +103,7 @@ func (ctrl *Controller) putStmt(query string, stmt *sql.Stmt) {
 
 func (ctrl *Controller) prepareStmt(ctx context.Context, qh QueryHandler, query string) (*sql.Stmt, error) {
 	var err error
+	ctx = context.WithValue(ctx, ContextKeyOperationType, OperationTypePrepare.String())
 	for _, fn := range ctrl.BeforeQuery {
 		var fnz FinalizerFunc
 		ctx, fnz = fn(ctx, query, nil)

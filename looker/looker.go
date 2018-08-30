@@ -45,16 +45,32 @@ func LookAtInterfaces(pkgPath string, is []reflect.Type) *Package {
 }
 
 type Interface struct {
-	Name    string
-	Methods Methods
+	ImportPath ImportElement
+	UserType   string
+	Methods    Methods
+}
+
+func (intf *Interface) Name(dstPath string) string {
+	if dstPath == intf.ImportPath.Path {
+		return intf.UserType
+	}
+	return intf.ImportPath.Name() + "." + intf.UserType
+}
+
+func (intf *Interface) ImplementationName(dstPath string, prefix string) string {
+	if dstPath == intf.ImportPath.Path {
+		return prefix + intf.UserType
+	}
+	return intf.ImportPath.Name() + "." + prefix + intf.UserType
 }
 
 type Interfaces []*Interface
 
 func LookAtInterface(typ reflect.Type) *Interface {
 	intf := &Interface{
-		Name:    typ.Name(),
-		Methods: make(Methods, 0, typ.NumMethod()),
+		ImportPath: ImportElement{Path: typ.PkgPath()},
+		UserType:   typ.Name(),
+		Methods:    make(Methods, 0, typ.NumMethod()),
 	}
 
 	for i := 0; i < typ.NumMethod(); i++ {
@@ -81,7 +97,7 @@ type Methods []*Method
 
 type Parameter interface {
 	Kind() string
-	Name() string
+	Name(dstPath string) string
 	Pointer() bool
 }
 
@@ -114,7 +130,10 @@ func (prm *StructElement) Kind() string {
 	return reflect.Struct.String()
 }
 
-func (prm *StructElement) Name() string {
+func (prm *StructElement) Name(dstPath string) string {
+	if dstPath == prm.ImportPath.Path {
+		return prm.UserType
+	}
 	return prm.ImportPath.Name() + "." + prm.UserType
 }
 
@@ -133,8 +152,11 @@ func (prm *SliceElement) Kind() string {
 	return reflect.Slice.String()
 }
 
-func (prm *SliceElement) Name() string {
+func (prm *SliceElement) Name(dstPath string) string {
 	if prm.UserType != "" {
+		if dstPath == prm.ImportPath.Path {
+			return prm.UserType
+		}
 		return prm.ImportPath.Name() + "." + prm.UserType
 	}
 
@@ -142,7 +164,7 @@ func (prm *SliceElement) Name() string {
 	if prm.Item.Pointer() {
 		ptr = "*"
 	}
-	return "[]" + ptr + prm.Item.Name()
+	return "[]" + ptr + prm.Item.Name(dstPath)
 }
 
 func (prm *SliceElement) Pointer() bool {
@@ -158,8 +180,11 @@ func (prm *InterfaceElement) Kind() string {
 	return reflect.Interface.String()
 }
 
-func (prm *InterfaceElement) Name() string {
+func (prm *InterfaceElement) Name(dstPath string) string {
 	if prm.ImportPath.Path == "" {
+		return prm.UserType
+	}
+	if dstPath == prm.ImportPath.Path {
 		return prm.UserType
 	}
 	return prm.ImportPath.Name() + "." + prm.UserType
@@ -180,7 +205,10 @@ func (prm *UnsupportedElement) Kind() string {
 	return prm.BaseType
 }
 
-func (prm *UnsupportedElement) Name() string {
+func (prm *UnsupportedElement) Name(dstPath string) string {
+	if dstPath == prm.ImportPath.Path {
+		return prm.UserType
+	}
 	return prm.ImportPath.Name() + "." + prm.UserType
 }
 

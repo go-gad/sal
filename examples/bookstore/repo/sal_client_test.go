@@ -24,7 +24,16 @@ func TestSalStore_CreateAuthor(t *testing.T) {
 	b1 := func(ctx context.Context, query string, req interface{}) (context.Context, sal.FinalizerFunc) {
 		start := time.Now()
 		return ctx, func(ctx context.Context, err error) {
-			t.Logf("Query %q with req %#v took [%v] Error: %+v", query, req, time.Since(start), err)
+			t.Logf(
+				"%q > Opeartion %q: %q with req %#v took [%v] inTx[%v] Error: %+v",
+				ctx.Value(sal.ContextKeyMethodName),
+				ctx.Value(sal.ContextKeyOperationType),
+				query,
+				req,
+				time.Since(start),
+				ctx.Value(sal.ContextKeyTxOpened),
+				err,
+			)
 		}
 	}
 
@@ -101,7 +110,22 @@ func TestNewStoreController(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	client := repo.NewStore(db)
+	b1 := func(ctx context.Context, query string, req interface{}) (context.Context, sal.FinalizerFunc) {
+		start := time.Now()
+		return ctx, func(ctx context.Context, err error) {
+			t.Logf(
+				"%q > Opeartion %q: %q with req %#v took [%v] inTx[%v] Error: %+v",
+				ctx.Value(sal.ContextKeyMethodName),
+				ctx.Value(sal.ContextKeyOperationType),
+				query,
+				req,
+				time.Since(start),
+				ctx.Value(sal.ContextKeyTxOpened),
+				err,
+			)
+		}
+	}
+	client := repo.NewStore(db, sal.BeforeQuery(b1))
 
 	req1 := bookstore.CreateAuthorReq{Name: "foo", Desc: "Bar"}
 	rows := sqlmock.NewRows([]string{"ID", "CreatedAt"}).AddRow(int64(1), time.Now().Truncate(time.Millisecond))

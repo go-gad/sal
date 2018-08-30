@@ -31,11 +31,27 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (bookstore.
 	if !ok {
 		return nil, errors.New("oops")
 	}
+	var (
+		err error
+		tx  *sql.Tx
+	)
 
-	// todo middleware
-	tx, err := dbConn.BeginTx(ctx, opts)
+	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Begin")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "BeginTx")
+
+	for _, fn := range s.ctrl.BeforeQuery {
+		var fnz sal.FinalizerFunc
+		ctx, fnz = fn(ctx, "BEGIN", nil)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
+	tx, err = dbConn.BeginTx(ctx, opts)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to start tx")
+		err = errors.Wrap(err, "failed to start tx")
+		return nil, err
 	}
 
 	newClient := &SalStore{
@@ -64,6 +80,8 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req bookstore.CreateAuthorR
 	reqMap["Desc"] = &req.Desc
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "QueryRow")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "CreateAuthor")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
@@ -133,6 +151,8 @@ func (s *SalStore) GetAuthors(ctx context.Context, req bookstore.GetAuthorsReq) 
 	req.ProcessRow(reqMap)
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Query")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "GetAuthors")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
@@ -205,6 +225,8 @@ func (s *SalStore) UpdateAuthor(ctx context.Context, req *bookstore.UpdateAuthor
 	reqMap["Desc"] = &req.Desc
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Exec")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "UpdateAuthor")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 

@@ -9,20 +9,13 @@ import (
 
 	"reflect"
 
+	"github.com/go-gad/sal"
 	"github.com/go-gad/sal/looker"
 	"github.com/pkg/errors"
 )
 
 const (
 	Prefix = "Sal"
-)
-
-type OperationType int
-
-const (
-	QueryRowOperation OperationType = iota
-	QueryOperation
-	ExecOperation
 )
 
 const (
@@ -114,7 +107,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	outArgs := make(prmArgs, 0, 2)
 
 	resp := mtd.Out[0]
-	if operation != ExecOperation {
+	if operation != sal.OperationTypeExec {
 		outArgs = append(outArgs, elementType(resp.Pointer(), resp.Name()))
 	}
 	outArgs = append(outArgs, mtd.Out[len(mtd.Out)-1].Name())
@@ -140,6 +133,8 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	}
 
 	g.p("ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)")
+	g.p("ctx = context.WithValue(ctx, sal.ContextKeyOperationType, %q)", operation.String())
+	g.p("ctx = context.WithValue(ctx, sal.ContextKeyMethodName, %q)", mtd.Name)
 	g.br()
 
 	g.p("pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)")
@@ -148,25 +143,19 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)")
 	g.p("if err != nil {")
 	switch operation {
-	case QueryOperation, QueryRowOperation:
+	case sal.OperationTypeQuery, sal.OperationTypeQueryRow:
 		g.p("return nil, errors.WithStack(err)")
-	case ExecOperation:
+	case sal.OperationTypeExec:
 		g.p("return errors.WithStack(err)")
 	}
 	g.p("}")
 	g.br()
 
-	g.p("for _, fn := range s.ctrl.BeforeQuery {")
-	g.p("var fnz sal.FinalizerFunc")
-	g.p("ctx, fnz = fn(ctx, rawQuery, req)")
-	g.p("if fnz != nil {")
-	g.p("defer func() { fnz(ctx, err) }()")
-	g.p("}")
-	g.p("}")
+	g.beforeQueryHook("rawQuery", "req")
 	g.br()
 
 	switch operation {
-	case QueryOperation, QueryRowOperation:
+	case sal.OperationTypeQuery, sal.OperationTypeQueryRow:
 		g.p("rows, err := stmt.QueryContext(ctx, args...)")
 		g.ifErr("failed to execute Query")
 		g.p("defer rows.Close()")
@@ -175,7 +164,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.p("cols, err := rows.Columns()")
 		g.ifErr("failed to fetch columns")
 		g.br()
-	case ExecOperation:
+	case sal.OperationTypeExec:
 		g.p("_, err = stmt.ExecContext(ctx, args...)")
 		g.p("if err != nil {")
 		g.p("return errors.Wrap(err, %q)", "failed to execute Exec")
@@ -183,13 +172,13 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 		g.br()
 	}
 
-	if operation == ExecOperation {
+	if operation == sal.OperationTypeExec {
 		g.p("return nil")
 		g.p("}")
 		return nil
 	}
 
-	if operation == QueryRowOperation {
+	if operation == sal.OperationTypeQueryRow {
 		g.p("if !rows.Next() {")
 		g.p("if err = rows.Err(); err != nil {")
 		g.p("return nil, errors.Wrap(err, %q)", "rows error")
@@ -200,7 +189,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	}
 
 	var respRow looker.Parameter
-	if operation == QueryOperation {
+	if operation == sal.OperationTypeQuery {
 		g.p("var list = make(%s, 0)", resp.Name())
 		g.br()
 		g.p("for rows.Next() {")
@@ -235,7 +224,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.p("if err = rows.Scan(dest...); err != nil {")
 	g.p("return nil, errors.Wrap(err, %q)", "failed to scan row")
 	g.p("}")
-	if operation == QueryOperation {
+	if operation == sal.OperationTypeQuery {
 		if respRow.Pointer() {
 			respRowStr = "&resp"
 		}
@@ -251,7 +240,7 @@ func (g *generator) GenerateMethod(implName string, mtd *looker.Method) error {
 	g.br()
 
 	respStr := "resp"
-	if operation == QueryOperation {
+	if operation == sal.OperationTypeQuery {
 		respStr = "list"
 	}
 
@@ -272,10 +261,25 @@ func (g *generator) GenerateBeginTx(implName, intfName string) {
 	g.p("if !ok {")
 	g.p("return nil, errors.New(%q)", "oops")
 	g.p("}")
+	g.p("var (")
+	g.p("err error")
+	g.p("tx  *sql.Tx")
+	g.p(")")
 	g.br()
-	g.p("// todo middleware")
-	g.p("tx, err := dbConn.BeginTx(ctx, opts)")
-	g.ifErr("failed to start tx")
+
+	g.p("ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)")
+	g.p("ctx = context.WithValue(ctx, sal.ContextKeyOperationType, %q)", sal.OperationTypeBegin.String())
+	g.p("ctx = context.WithValue(ctx, sal.ContextKeyMethodName, %q)", "BeginTx")
+	g.br()
+
+	g.beforeQueryHook(`"BEGIN"`, "nil")
+	g.br()
+
+	g.p("tx, err = dbConn.BeginTx(ctx, opts)")
+	g.p("if err != nil {")
+	g.p("err = errors.Wrap(err, %q)", "failed to start tx")
+	g.p("return nil, err")
+	g.p("}")
 	g.br()
 	g.p("newClient := &%s{", implName)
 	g.p("handler: tx,")
@@ -299,6 +303,16 @@ func (g *generator) GenerateTx(implName string) {
 func (g *generator) ifErr(msg string) {
 	g.p("if err != nil {")
 	g.p("return nil, errors.Wrap(err, %q)", msg)
+	g.p("}")
+}
+
+func (g *generator) beforeQueryHook(q, r string) {
+	g.p("for _, fn := range s.ctrl.BeforeQuery {")
+	g.p("var fnz sal.FinalizerFunc")
+	g.p("ctx, fnz = fn(ctx, %s, %s)", q, r)
+	g.p("if fnz != nil {")
+	g.p("defer func() { fnz(ctx, err) }()")
+	g.p("}")
 	g.p("}")
 }
 
@@ -327,12 +341,12 @@ func (g *generator) br() {
 	g.p("")
 }
 
-func calcOperationType(prms looker.Parameters) OperationType {
+func calcOperationType(prms looker.Parameters) sal.OperationType {
 	if len(prms) == 1 {
-		return ExecOperation
+		return sal.OperationTypeExec
 	}
 	if prms[0].Kind() == reflect.Slice.String() {
-		return QueryOperation
+		return sal.OperationTypeQuery
 	}
-	return QueryRowOperation
+	return sal.OperationTypeQueryRow
 }

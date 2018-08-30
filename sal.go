@@ -103,6 +103,7 @@ func (ctrl *Controller) putStmt(query string, stmt *sql.Stmt) {
 
 func (ctrl *Controller) prepareStmt(ctx context.Context, qh QueryHandler, query string) (*sql.Stmt, error) {
 	var err error
+	ctx = context.WithValue(ctx, ContextKeyOperationType, OperationTypePrepare.String())
 	for _, fn := range ctrl.BeforeQuery {
 		var fnz FinalizerFunc
 		ctx, fnz = fn(ctx, query, nil)
@@ -150,6 +151,8 @@ type contextKey int
 
 const (
 	ContextKeyTxOpened contextKey = iota
+	ContextKeyOperationType
+	ContextKeyMethodName
 )
 
 type ClientOption func(ctrl *Controller)
@@ -161,3 +164,29 @@ func BeforeQuery(before ...BeforeQueryFunc) ClientOption {
 type BeforeQueryFunc func(ctx context.Context, query string, req interface{}) (context.Context, FinalizerFunc)
 
 type FinalizerFunc func(ctx context.Context, err error)
+
+type OperationType int
+
+const (
+	OperationTypeQueryRow OperationType = iota
+	OperationTypeQuery
+	OperationTypeExec
+	OperationTypeBegin
+	OperationTypeCommit
+	OperationTypeRollback
+	OperationTypePrepare
+)
+
+var operationTypeNames = []string{
+	"QueryRow",
+	"Query",
+	"Exec",
+	"Begin",
+	"Commit",
+	"Rollback",
+	"Prepare",
+}
+
+func (op OperationType) String() string {
+	return operationTypeNames[op]
+}

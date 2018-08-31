@@ -52,12 +52,6 @@ type TransactionBegin interface {
 	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
 }
 
-//type Transaction interface {
-//	Commit(ctx context.Context) error
-//	Rollback(ctx context.Context) error
-//	StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
-//}
-
 type Txer interface {
 	Tx() *WrappedTx
 }

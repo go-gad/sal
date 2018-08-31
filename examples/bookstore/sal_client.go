@@ -12,7 +12,7 @@ import (
 type StoreConn interface {
 	Store
 
-	BeginTx(opts *sql.TxOptions) (StoreTx, error)
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (StoreTx, error)
 }
 
 type StoreTx interface {
@@ -21,6 +21,11 @@ type StoreTx interface {
 	Commit() error
 	Rollback() error
 }
+
+//compile-time checks
+var _ Store = &SalStore{}
+var _ StoreConn = &SalStore{}
+var _ StoreTx = &SalStore{}
 
 type SalStore struct {
 	handler  sal.QueryHandler
@@ -38,7 +43,7 @@ func NewStore(h sal.QueryHandler, options ...sal.ClientOption) *SalStore {
 	return s
 }
 
-func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (*SalStore, error) {
+func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (StoreTx, error) {
 	dbConn, ok := s.handler.(sal.TransactionBegin)
 	if !ok {
 		return nil, errors.New("oops")
@@ -75,10 +80,13 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (*SalStore,
 	return newClient, nil
 }
 
-func (s *SalStore) Tx() sal.TxHandler {
-	if tx, ok := s.handler.(sal.TxHandler); ok {
-		return tx
-	}
+func (s *SalStore) Commit() error {
+	//todo
+	return nil
+}
+
+func (s *SalStore) Rollback() error {
+	//todo
 	return nil
 }
 func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (*CreateAuthorResp, error) {

@@ -142,6 +142,50 @@ func TestLookAtFields(t *testing.T) {
 	t.Logf("struct field %# v", pretty.Formatter(actFields))
 }
 
+func TestLookAtFields_Nested(t *testing.T) {
+	var typ reflect.Type = reflect.TypeOf(testdata.Lvl1{})
+	actFields := looker.LookAtFields(typ)
+
+	expFields := looker.Fields{
+		{
+			Name:       "Name",
+			ImportPath: looker.ImportElement{},
+			BaseType:   "string",
+			UserType:   "string",
+			Anonymous:  false,
+			Tag:        "",
+		},
+		{
+			Name:       "Desc",
+			ImportPath: looker.ImportElement{},
+			BaseType:   "string",
+			UserType:   "string",
+			Anonymous:  false,
+			Tag:        "",
+		},
+		{
+			Name:       "Foo",
+			ImportPath: looker.ImportElement{},
+			BaseType:   "string",
+			UserType:   "string",
+			Anonymous:  false,
+			Tag:        "",
+		},
+		{
+			Name:       "Bar",
+			ImportPath: looker.ImportElement{},
+			BaseType:   "string",
+			UserType:   "string",
+			Anonymous:  false,
+			Tag:        "",
+		},
+	}
+
+	assert.Equal(t, expFields, actFields)
+
+	t.Logf("struct field %# v", pretty.Formatter(actFields))
+}
+
 func TestIsProcessRower(t *testing.T) {
 	for _, tc := range []struct {
 		typ reflect.Type

@@ -9,6 +9,19 @@ import (
 	"github.com/pkg/errors"
 )
 
+type StoreConn interface {
+	Store
+
+	BeginTx(opts *sql.TxOptions) (StoreTx, error)
+}
+
+type StoreTx interface {
+	Store
+
+	Commit() error
+	Rollback() error
+}
+
 type SalStore struct {
 	handler  sal.QueryHandler
 	ctrl     *sal.Controller
@@ -68,7 +81,6 @@ func (s *SalStore) Tx() sal.TxHandler {
 	}
 	return nil
 }
-
 func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (*CreateAuthorResp, error) {
 	var (
 		err      error

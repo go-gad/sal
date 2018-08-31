@@ -55,6 +55,21 @@ func (g *generator) Generate(pkg *looker.Package, dstPkg looker.ImportElement) e
 }
 
 func (g *generator) GenerateInterface(dstPkg looker.ImportElement, intf *looker.Interface) error {
+	g.p("type %vConn interface {", intf.UserType)
+	g.p("%v", intf.UserType)
+	g.br()
+	g.p("BeginTx(opts *sql.TxOptions) (%vTx, error)", intf.UserType)
+	g.p("}")
+	g.br()
+
+	g.p("type %vTx interface {", intf.UserType)
+	g.p("%v", intf.UserType)
+	g.br()
+	g.p("Commit() error")
+	g.p("Rollback() error")
+	g.p("}")
+	g.br()
+
 	implName := intf.ImplementationName(dstPkg.Path, Prefix)
 	g.p("type %v struct {", implName)
 	g.p("handler sal.QueryHandler")
@@ -293,10 +308,13 @@ func (g *generator) GenerateBeginTx(dstPkg looker.ImportElement, intf *looker.In
 }
 
 func (g *generator) GenerateTx(dstPkg looker.ImportElement, intf *looker.Interface) {
-	g.p("func (s *%s) Tx() sal.TxHandler {", intf.ImplementationName(dstPkg.Path, Prefix))
-	g.p("if tx, ok := s.handler.(sal.TxHandler); ok {")
-	g.p("return tx")
+	g.p("func (s *%s) Commit() error {", intf.ImplementationName(dstPkg.Path, Prefix))
+	g.p("//todo")
+	g.p("return nil")
 	g.p("}")
+	g.br()
+	g.p("func (s *%s) Rollback() error {", intf.ImplementationName(dstPkg.Path, Prefix))
+	g.p("//todo")
 	g.p("return nil")
 	g.p("}")
 }

@@ -287,13 +287,17 @@ func LookAtFields(st reflect.Type) Fields {
 	fields := make(Fields, 0, st.NumField())
 	for i := 0; i < st.NumField(); i++ {
 		ft := st.Field(i)
-		fields = append(fields, LookAtField(ft))
+		fields = append(fields, LookAtField(ft)...)
 	}
 	return fields
 }
 
-func LookAtField(ft reflect.StructField) Field {
-	return Field{
+func LookAtField(ft reflect.StructField) []Field {
+	if ft.Anonymous && ft.Type.Kind() == reflect.Struct {
+		// going to analyze embedded struct
+		return LookAtFields(ft.Type)
+	}
+	f := Field{
 		Name:       ft.Name,
 		ImportPath: ImportElement{Path: ft.Type.PkgPath()},
 		BaseType:   ft.Type.Kind().String(),
@@ -301,4 +305,5 @@ func LookAtField(ft reflect.StructField) Field {
 		Anonymous:  ft.Anonymous,
 		Tag:        ft.Tag.Get(tagName),
 	}
+	return []Field{f}
 }

@@ -42,15 +42,6 @@ type ProcessRower interface {
 	ProcessRow(rowMap RowMap)
 }
 
-type Txer interface {
-	Tx() TxHandler
-}
-
-type TxHandler interface {
-	QueryHandler
-	Transaction
-}
-
 type QueryHandler interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
@@ -61,10 +52,133 @@ type TransactionBegin interface {
 	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
 }
 
-type Transaction interface {
-	Commit() error
-	Rollback() error
-	StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
+//type Transaction interface {
+//	Commit(ctx context.Context) error
+//	Rollback(ctx context.Context) error
+//	StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
+//}
+
+type Txer interface {
+	Tx() *WrappedTx
+}
+
+type WrappedTx struct {
+	Tx   *sql.Tx
+	ctrl *Controller
+}
+
+func NewWrappedTx(tx *sql.Tx, ctrl *Controller) *WrappedTx {
+	return &WrappedTx{Tx: tx, ctrl: ctrl}
+}
+
+func (wtx *WrappedTx) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+	ctx = context.WithValue(ctx, ContextKeyTxOpened, true)
+	ctx = context.WithValue(ctx, ContextKeyOperationType, OperationTypeQuery.String())
+	var (
+		resp *sql.Rows
+		err  error
+	)
+	for _, fn := range wtx.ctrl.BeforeQuery {
+		var fnz FinalizerFunc
+		ctx, fnz = fn(ctx, query, args)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
+	resp, err = wtx.Tx.QueryContext(ctx, query, args...)
+
+	return resp, err
+}
+
+func (wtx *WrappedTx) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	ctx = context.WithValue(ctx, ContextKeyTxOpened, true)
+	ctx = context.WithValue(ctx, ContextKeyOperationType, OperationTypeExec.String())
+	var (
+		resp sql.Result
+		err  error
+	)
+	for _, fn := range wtx.ctrl.BeforeQuery {
+		var fnz FinalizerFunc
+		ctx, fnz = fn(ctx, query, args)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
+	resp, err = wtx.Tx.ExecContext(ctx, query, args...)
+
+	return resp, err
+}
+
+func (wtx *WrappedTx) PrepareContext(ctx context.Context, query string) (*sql.Stmt, error) {
+	ctx = context.WithValue(ctx, ContextKeyTxOpened, true)
+	ctx = context.WithValue(ctx, ContextKeyOperationType, OperationTypePrepare.String())
+	var (
+		resp *sql.Stmt
+		err  error
+	)
+	for _, fn := range wtx.ctrl.BeforeQuery {
+		var fnz FinalizerFunc
+		ctx, fnz = fn(ctx, query, nil)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
+	resp, err = wtx.Tx.PrepareContext(ctx, query)
+
+	return resp, err
+}
+
+func (wtx *WrappedTx) StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt {
+	ctx = context.WithValue(ctx, ContextKeyTxOpened, true)
+	ctx = context.WithValue(ctx, ContextKeyOperationType, OperationTypeStmt.String())
+	for _, fn := range wtx.ctrl.BeforeQuery {
+		var fnz FinalizerFunc
+		ctx, fnz = fn(ctx, "", nil)
+		if fnz != nil {
+			defer func() { fnz(ctx, nil) }()
+		}
+	}
+
+	return wtx.Tx.StmtContext(ctx, stmt)
+}
+
+func (wtx *WrappedTx) Commit(ctx context.Context) error {
+	ctx = context.WithValue(ctx, ContextKeyTxOpened, true)
+	ctx = context.WithValue(ctx, ContextKeyOperationType, OperationTypeCommit.String())
+	ctx = context.WithValue(ctx, ContextKeyMethodName, "Commit")
+	var err error
+	for _, fn := range wtx.ctrl.BeforeQuery {
+		var fnz FinalizerFunc
+		ctx, fnz = fn(ctx, "COMMIT", nil)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
+	err = wtx.Tx.Commit()
+
+	return err
+}
+
+func (wtx *WrappedTx) Rollback(ctx context.Context) error {
+	ctx = context.WithValue(ctx, ContextKeyTxOpened, true)
+	ctx = context.WithValue(ctx, ContextKeyOperationType, OperationTypeRollback.String())
+	ctx = context.WithValue(ctx, ContextKeyMethodName, "Rollback")
+	var err error
+	for _, fn := range wtx.ctrl.BeforeQuery {
+		var fnz FinalizerFunc
+		ctx, fnz = fn(ctx, "ROLLBACK", nil)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
+	err = wtx.Tx.Rollback()
+
+	return err
 }
 
 type Controller struct {
@@ -137,7 +251,7 @@ func (ctrl *Controller) PrepareStmt(ctx context.Context, qh QueryHandler, query 
 
 	txOpened, _ := ctx.Value(ContextKeyTxOpened).(bool)
 	if txOpened {
-		txh, ok := qh.(TxHandler)
+		txh, ok := qh.(*sql.Tx)
 		if !ok {
 			return nil, errors.New("failed to get transaction handler")
 		}
@@ -175,6 +289,7 @@ const (
 	OperationTypeCommit
 	OperationTypeRollback
 	OperationTypePrepare
+	OperationTypeStmt
 )
 
 var operationTypeNames = []string{
@@ -185,6 +300,7 @@ var operationTypeNames = []string{
 	"Commit",
 	"Rollback",
 	"Prepare",
+	"Stmt",
 }
 
 func (op OperationType) String() string {

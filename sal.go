@@ -42,13 +42,13 @@ type ProcessRower interface {
 	ProcessRow(rowMap RowMap)
 }
 
-type Transaction interface {
+type Txer interface {
 	Tx() TxHandler
 }
 
 type TxHandler interface {
 	QueryHandler
-	TransactionEnd
+	Transaction
 }
 
 type QueryHandler interface {
@@ -61,7 +61,7 @@ type TransactionBegin interface {
 	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
 }
 
-type TransactionEnd interface {
+type Transaction interface {
 	Commit() error
 	Rollback() error
 	StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt

@@ -257,7 +257,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 }
 
 func (g *generator) GenerateBeginTx(dstPkg looker.ImportElement, intf *looker.Interface) {
-	g.p("func (s *%s) BeginTx(ctx context.Context, opts *sql.TxOptions) (%s, error) {", intf.ImplementationName(dstPkg.Path, Prefix), intf.Name(dstPkg.Path))
+	g.p("func (s *%s) BeginTx(ctx context.Context, opts *sql.TxOptions) (*%s, error) {", intf.ImplementationName(dstPkg.Path, Prefix), intf.ImplementationName(dstPkg.Path, Prefix))
 	g.p("dbConn, ok := s.handler.(sal.TransactionBegin)")
 	g.p("if !ok {")
 	g.p("return nil, errors.New(%q)", "oops")

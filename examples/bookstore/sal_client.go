@@ -25,7 +25,7 @@ func NewStore(h sal.QueryHandler, options ...sal.ClientOption) *SalStore {
 	return s
 }
 
-func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, error) {
+func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (*SalStore, error) {
 	dbConn, ok := s.handler.(sal.TransactionBegin)
 	if !ok {
 		return nil, errors.New("oops")

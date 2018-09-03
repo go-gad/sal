@@ -10,6 +10,7 @@ import (
 )
 
 type SalStore struct {
+	Store
 	handler  sal.QueryHandler
 	ctrl     *sal.Controller
 	txOpened bool
@@ -25,7 +26,7 @@ func NewStore(h sal.QueryHandler, options ...sal.ClientOption) *SalStore {
 	return s
 }
 
-func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (*SalStore, error) {
+func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, error) {
 	dbConn, ok := s.handler.(sal.TransactionBegin)
 	if !ok {
 		return nil, errors.New("oops")
@@ -249,3 +250,6 @@ func (s *SalStore) UpdateAuthor(ctx context.Context, req *UpdateAuthorReq) error
 
 	return nil
 }
+
+// compile time checks
+var _ Store = &SalStore{}

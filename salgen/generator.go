@@ -49,6 +49,8 @@ func (g *generator) Generate(pkg *looker.Package, dstPkg looker.ImportElement) e
 		if err := g.GenerateInterface(dstPkg, intf); err != nil {
 			return err
 		}
+		g.p("// compile time checks")
+		g.p("var _ %s = &%s{}", intf.Name(dstPkg.Path), intf.ImplementationName(dstPkg.Path, Prefix))
 	}
 
 	return nil
@@ -57,6 +59,7 @@ func (g *generator) Generate(pkg *looker.Package, dstPkg looker.ImportElement) e
 func (g *generator) GenerateInterface(dstPkg looker.ImportElement, intf *looker.Interface) error {
 	implName := intf.ImplementationName(dstPkg.Path, Prefix)
 	g.p("type %v struct {", implName)
+	g.p("%s", intf.Name(dstPkg.Path))
 	g.p("handler sal.QueryHandler")
 	g.p("ctrl *sal.Controller")
 	g.p("txOpened bool")
@@ -257,7 +260,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 }
 
 func (g *generator) GenerateBeginTx(dstPkg looker.ImportElement, intf *looker.Interface) {
-	g.p("func (s *%s) BeginTx(ctx context.Context, opts *sql.TxOptions) (*%s, error) {", intf.ImplementationName(dstPkg.Path, Prefix), intf.ImplementationName(dstPkg.Path, Prefix))
+	g.p("func (s *%s) BeginTx(ctx context.Context, opts *sql.TxOptions) (%s, error) {", intf.ImplementationName(dstPkg.Path, Prefix), intf.Name(dstPkg.Path))
 	g.p("dbConn, ok := s.handler.(sal.TransactionBegin)")
 	g.p("if !ok {")
 	g.p("return nil, errors.New(%q)", "oops")

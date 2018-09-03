@@ -4,6 +4,9 @@ sudo: false
 language: go
 go: [ "1.10" ]
 
+before_install:
+  - dep ensure
+
 script:
-- go test -race ./...
+  - go test -race ./...
 

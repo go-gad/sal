@@ -1,0 +1,16 @@
+dist: trusty
+sudo: false
+
+language: go
+go: [ "1.10" ]
+env:
+  global:
+  - PATH=$PATH:$HOME/gopath/bin
+
+install:
+  - go get github.com/golang/dep/cmd/dep
+  - dep ensure
+
+script:
+  - go test -race ./...
+

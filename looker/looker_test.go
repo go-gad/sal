@@ -4,12 +4,19 @@ import (
 	"reflect"
 	"testing"
 
+	"io/ioutil"
+
+	"fmt"
+
 	pkg_ "github.com/go-gad/sal/examples/bookstore"
 	"github.com/go-gad/sal/looker"
 	"github.com/go-gad/sal/looker/testdata"
 	"github.com/kr/pretty"
+	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 )
+
+var update bool = false
 
 func TestLookAtInterfaces(t *testing.T) {
 	pkgPath := "github.com/go-gad/sal/examples/bookstore"
@@ -24,21 +31,27 @@ func TestLookAtInterfaces(t *testing.T) {
 func TestLookAtInterface(t *testing.T) {
 	var typ reflect.Type = reflect.TypeOf((*pkg_.Store)(nil)).Elem()
 	intf := looker.LookAtInterface(typ)
-	t.Logf("Interface %# v", pretty.Formatter(intf))
+	//t.Logf("Interface %# v", pretty.Formatter(intf))
+	act := fmt.Sprintf("%# v", pretty.Formatter(intf))
+	if update {
+		if err := ioutil.WriteFile("testdata/interface.golden", []byte(act), 0666); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	exp, err := ioutil.ReadFile("testdata/interface.golden")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(exp) != act {
+		t.Error("actual interface is not equal to expected")
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(string(exp), act, true)
+		t.Log(dmp.DiffPrettyText(diffs))
+	}
 }
 
 func TestLookAtParameter(t *testing.T) {
-	var typ reflect.Type = reflect.TypeOf(testdata.Req1{})
-
-	if typ.Kind() == reflect.Ptr {
-		t.Log("It is a pointer")
-		typ = typ.Elem()
-	}
-	se := looker.LookAtParameter(typ)
-	t.Logf("struct element %# v", pretty.Formatter(se))
-}
-
-func TestLookAtParameter2(t *testing.T) {
 	ftyp := reflect.TypeOf(testdata.Foo)
 
 	for _, tc := range []struct {
@@ -111,6 +124,7 @@ func TestLookAtParameter2(t *testing.T) {
 			assert.Equal(tc.kind, prm.Kind())
 			assert.Equal(tc.name, prm.Name(dstPkg.Path))
 			assert.Equal(tc.ptr, prm.Pointer())
+			t.Logf("struct element %# v", pretty.Formatter(prm))
 		})
 	}
 }

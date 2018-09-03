@@ -1,0 +1,287 @@
+&looker.Package{
+    ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+    Interfaces: {
+        &looker.Interface{
+            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+            UserType:   "Store",
+            Methods:    {
+                &looker.Method{
+                    Name: "BeginTx",
+                    In:   {
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{Path:"context", Alias:""},
+                            UserType:   "Context",
+                        },
+                        &looker.StructElement{
+                            ImportPath: looker.ImportElement{Path:"database/sql", Alias:""},
+                            UserType:   "TxOptions",
+                            IsPointer:  true,
+                            Fields:     {
+                                {
+                                    Name:       "Isolation",
+                                    ImportPath: looker.ImportElement{Path:"database/sql", Alias:""},
+                                    BaseType:   "int",
+                                    UserType:   "IsolationLevel",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                                {
+                                    Name:       "ReadOnly",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "bool",
+                                    UserType:   "bool",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                            },
+                            ProcessRower: false,
+                        },
+                    },
+                    Out: {
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+                            UserType:   "Store",
+                        },
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{},
+                            UserType:   "error",
+                        },
+                    },
+                },
+                &looker.Method{
+                    Name: "CreateAuthor",
+                    In:   {
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{Path:"context", Alias:""},
+                            UserType:   "Context",
+                        },
+                        &looker.StructElement{
+                            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+                            UserType:   "CreateAuthorReq",
+                            IsPointer:  false,
+                            Fields:     {
+                                {
+                                    Name:       "Name",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "string",
+                                    UserType:   "string",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                                {
+                                    Name:       "Desc",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "string",
+                                    UserType:   "string",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                            },
+                            ProcessRower: false,
+                        },
+                    },
+                    Out: {
+                        &looker.StructElement{
+                            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+                            UserType:   "CreateAuthorResp",
+                            IsPointer:  true,
+                            Fields:     {
+                                {
+                                    Name:       "ID",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "int64",
+                                    UserType:   "int64",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                                {
+                                    Name:       "CreatedAt",
+                                    ImportPath: looker.ImportElement{Path:"time", Alias:""},
+                                    BaseType:   "struct",
+                                    UserType:   "Time",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                            },
+                            ProcessRower: false,
+                        },
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{},
+                            UserType:   "error",
+                        },
+                    },
+                },
+                &looker.Method{
+                    Name: "GetAuthors",
+                    In:   {
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{Path:"context", Alias:""},
+                            UserType:   "Context",
+                        },
+                        &looker.StructElement{
+                            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+                            UserType:   "GetAuthorsReq",
+                            IsPointer:  false,
+                            Fields:     {
+                                {
+                                    Name:       "ID",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "int64",
+                                    UserType:   "int64",
+                                    Anonymous:  false,
+                                    Tag:        "id",
+                                },
+                                {
+                                    Name:       "Tags",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "slice",
+                                    UserType:   "",
+                                    Anonymous:  false,
+                                    Tag:        "tags",
+                                },
+                            },
+                            ProcessRower: true,
+                        },
+                    },
+                    Out: {
+                        &looker.SliceElement{
+                            ImportPath: looker.ImportElement{},
+                            UserType:   "",
+                            Item:       &looker.StructElement{
+                                ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+                                UserType:   "GetAuthorsResp",
+                                IsPointer:  true,
+                                Fields:     {
+                                    {
+                                        Name:       "ID",
+                                        ImportPath: looker.ImportElement{},
+                                        BaseType:   "int64",
+                                        UserType:   "int64",
+                                        Anonymous:  false,
+                                        Tag:        "id",
+                                    },
+                                    {
+                                        Name:       "CreatedAt",
+                                        ImportPath: looker.ImportElement{Path:"time", Alias:""},
+                                        BaseType:   "struct",
+                                        UserType:   "Time",
+                                        Anonymous:  false,
+                                        Tag:        "created_at",
+                                    },
+                                    {
+                                        Name:       "Name",
+                                        ImportPath: looker.ImportElement{},
+                                        BaseType:   "string",
+                                        UserType:   "string",
+                                        Anonymous:  false,
+                                        Tag:        "name",
+                                    },
+                                    {
+                                        Name:       "Desc",
+                                        ImportPath: looker.ImportElement{},
+                                        BaseType:   "string",
+                                        UserType:   "string",
+                                        Anonymous:  false,
+                                        Tag:        "desc",
+                                    },
+                                    {
+                                        Name:       "Tags",
+                                        ImportPath: looker.ImportElement{},
+                                        BaseType:   "slice",
+                                        UserType:   "",
+                                        Anonymous:  false,
+                                        Tag:        "tags",
+                                    },
+                                },
+                                ProcessRower: true,
+                            },
+                            IsPointer: false,
+                        },
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{},
+                            UserType:   "error",
+                        },
+                    },
+                },
+                &looker.Method{
+                    Name: "Tx",
+                    In:   {
+                    },
+                    Out: {
+                        &looker.StructElement{
+                            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal", Alias:""},
+                            UserType:   "WrappedTx",
+                            IsPointer:  true,
+                            Fields:     {
+                                {
+                                    Name:       "Tx",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "ptr",
+                                    UserType:   "",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                                {
+                                    Name:       "ctrl",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "ptr",
+                                    UserType:   "",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                            },
+                            ProcessRower: false,
+                        },
+                    },
+                },
+                &looker.Method{
+                    Name: "UpdateAuthor",
+                    In:   {
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{Path:"context", Alias:""},
+                            UserType:   "Context",
+                        },
+                        &looker.StructElement{
+                            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+                            UserType:   "UpdateAuthorReq",
+                            IsPointer:  true,
+                            Fields:     {
+                                {
+                                    Name:       "ID",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "int64",
+                                    UserType:   "int64",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                                {
+                                    Name:       "Name",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "string",
+                                    UserType:   "string",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                                {
+                                    Name:       "Desc",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "string",
+                                    UserType:   "string",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                },
+                            },
+                            ProcessRower: false,
+                        },
+                    },
+                    Out: {
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{},
+                            UserType:   "error",
+                        },
+                    },
+                },
+            },
+        },
+    },
+}

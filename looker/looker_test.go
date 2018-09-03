@@ -25,7 +25,24 @@ func TestLookAtInterfaces(t *testing.T) {
 	}
 	pkg := looker.LookAtInterfaces(pkgPath, list)
 
-	t.Logf("package %# v", pretty.Formatter(pkg))
+	//t.Logf("package %# v", pretty.Formatter(pkg))
+
+	act := fmt.Sprintf("%# v", pretty.Formatter(pkg))
+	if update {
+		if err := ioutil.WriteFile("testdata/package.golden", []byte(act), 0666); err != nil {
+			t.Fatal(err)
+		}
+	}
+	exp, err := ioutil.ReadFile("testdata/package.golden")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(exp) != act {
+		t.Error("actual package is not equal to expected")
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(string(exp), act, true)
+		t.Log(dmp.DiffPrettyText(diffs))
+	}
 }
 
 func TestLookAtInterface(t *testing.T) {

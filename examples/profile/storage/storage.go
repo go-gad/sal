@@ -7,7 +7,7 @@ import (
 
 //go:generate salgen -destination=./client.go -package=github.com/go-gad/sal/examples/profile/storage github.com/go-gad/sal/examples/profile/storage Store
 type Store interface {
-	CreateUser(ctx context.Context, req CreateUserReq) (CreateUserResp, error)
+	CreateUser(ctx context.Context, req CreateUserReq) (*CreateUserResp, error)
 	AllUsers(ctx context.Context, req AllUsersReq) ([]*AllUsersResp, error)
 }
 

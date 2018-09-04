@@ -137,7 +137,7 @@ func (s *SalStore) AllUsers(ctx context.Context, req AllUsersReq) ([]*AllUsersRe
 	return list, nil
 }
 
-func (s *SalStore) CreateUser(ctx context.Context, req CreateUserReq) (CreateUserResp, error) {
+func (s *SalStore) CreateUser(ctx context.Context, req CreateUserReq) (*CreateUserResp, error) {
 	var (
 		err      error
 		rawQuery = req.Query()
@@ -203,7 +203,7 @@ func (s *SalStore) CreateUser(ctx context.Context, req CreateUserReq) (CreateUse
 		return nil, errors.Wrap(err, "something failed during iteration")
 	}
 
-	return resp, nil
+	return &resp, nil
 }
 
 // compile time checks

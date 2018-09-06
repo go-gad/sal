@@ -145,11 +145,24 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	g.p("pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)")
 	g.br()
 
+	var errRespStr string
+	if operation != sal.OperationTypeExec {
+		if resp.Pointer() {
+			errRespStr = "nil"
+		} else {
+			if resp.Kind() == reflect.Struct.String() {
+				errRespStr = req.Name(dstPkg.Path) + "{}"
+			} else {
+				errRespStr = "nil"
+			}
+		}
+	}
+
 	g.p("stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)")
 	g.p("if err != nil {")
 	switch operation {
 	case sal.OperationTypeQuery, sal.OperationTypeQueryRow:
-		g.p("return nil, errors.WithStack(err)")
+		g.p("return %s, errors.WithStack(err)", errRespStr)
 	case sal.OperationTypeExec:
 		g.p("return errors.WithStack(err)")
 	}
@@ -162,18 +175,16 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	switch operation {
 	case sal.OperationTypeQuery, sal.OperationTypeQueryRow:
 		g.p("rows, err := stmt.QueryContext(ctx, args...)")
-		g.ifErr("failed to execute Query")
+		g.ifErr(errRespStr, "failed to execute Query")
 		g.p("defer rows.Close()")
 		g.br()
 
 		g.p("cols, err := rows.Columns()")
-		g.ifErr("failed to fetch columns")
+		g.ifErr(errRespStr, "failed to fetch columns")
 		g.br()
 	case sal.OperationTypeExec:
 		g.p("_, err = stmt.ExecContext(ctx, args...)")
-		g.p("if err != nil {")
-		g.p("return errors.Wrap(err, %q)", "failed to execute Exec")
-		g.p("}")
+		g.ifErr("", "failed to execute Exec")
 		g.br()
 	}
 
@@ -186,9 +197,9 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	if operation == sal.OperationTypeQueryRow {
 		g.p("if !rows.Next() {")
 		g.p("if err = rows.Err(); err != nil {")
-		g.p("return nil, errors.Wrap(err, %q)", "rows error")
+		g.p("return %s, errors.Wrap(err, %q)", errRespStr, "rows error")
 		g.p("}")
-		g.p("return nil, sql.ErrNoRows")
+		g.p("return %s, sql.ErrNoRows", errRespStr)
 		g.p("}")
 		g.br()
 	}
@@ -227,7 +238,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	g.br()
 
 	g.p("if err = rows.Scan(dest...); err != nil {")
-	g.p("return nil, errors.Wrap(err, %q)", "failed to scan row")
+	g.p("return %s, errors.Wrap(err, %q)", errRespStr, "failed to scan row")
 	g.p("}")
 	if operation == sal.OperationTypeQuery {
 		if respRow.Pointer() {
@@ -240,7 +251,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	g.br()
 
 	g.p("if err = rows.Err(); err != nil {")
-	g.p("return nil, errors.Wrap(err, %q)", "something failed during iteration")
+	g.p("return %s, errors.Wrap(err, %q)", errRespStr, "something failed during iteration")
 	g.p("}")
 	g.br()
 
@@ -304,9 +315,13 @@ func (g *generator) GenerateTx(dstPkg looker.ImportElement, intf *looker.Interfa
 	g.p("}")
 }
 
-func (g *generator) ifErr(msg string) {
+func (g *generator) ifErr(resp, msg string) {
 	g.p("if err != nil {")
-	g.p("return nil, errors.Wrap(err, %q)", msg)
+	if resp == "" {
+		g.p("return errors.Wrap(err, %q)", msg)
+	} else {
+		g.p("return %s, errors.Wrap(err, %q)", resp, msg)
+	}
 	g.p("}")
 }
 

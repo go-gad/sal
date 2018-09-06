@@ -26,6 +26,13 @@ func main() {
 		symbols = strings.Split(flag.Arg(1), ",")
 	)
 
+	if len(*destination) > 0 {
+		err := os.Remove(*destination)
+		if err != nil && !os.IsNotExist(err) {
+			log.Fatalf("Failed to remove destination file: %+v", err)
+		}
+	}
+
 	dstPkg := looker.ImportElement{Path: *packageName}
 	code, err := GenerateCode(dstPkg, srcpkg, symbols)
 	if err != nil {

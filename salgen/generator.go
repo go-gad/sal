@@ -33,12 +33,12 @@ func (g *generator) Generate(pkg *looker.Package, dstPkg looker.ImportElement) e
 	//g.p("// Generated at %s", time.Now())
 	g.p("package %v", dstPkg.Name())
 
+	paths := ImportPaths(pkg.ImportPaths(), dstPkg.Path)
+
 	g.p("import (")
-	g.p("%q", "context")
 	g.p("%q", "database/sql")
-	g.br()
-	if pkg.ImportPath.Path != dstPkg.Path {
-		g.p("%q", pkg.ImportPath.Path)
+	for _, p := range paths {
+		g.p("%q", p)
 	}
 	g.p("%q", "github.com/pkg/errors")
 	g.p("%q", "github.com/go-gad/sal")
@@ -368,4 +368,19 @@ func calcOperationType(prms looker.Parameters) sal.OperationType {
 		return sal.OperationTypeQuery
 	}
 	return sal.OperationTypeQueryRow
+}
+
+type ImportPather interface {
+	ImportPaths() []string
+}
+
+func ImportPaths(dirtyList []string, dstPath string) []string {
+	list := make([]string, 0)
+	for _, p := range dirtyList {
+		if p != "" && p != dstPath {
+			list = append(list, p)
+		}
+	}
+
+	return list
 }

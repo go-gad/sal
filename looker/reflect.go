@@ -94,7 +94,7 @@ func buildAndRun(program []byte, dir string) (*Package, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create tmp dir: %s", err)
 	}
-	defer func() { os.RemoveAll(tmpDir) }()
+	defer os.RemoveAll(tmpDir)
 	const progSource = "prog.go"
 	var progBinary = "prog.bin"
 	if runtime.GOOS == "windows" {

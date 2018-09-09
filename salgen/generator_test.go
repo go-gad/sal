@@ -8,7 +8,7 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-var update bool = false
+var update bool = true
 
 func TestGenerateCode(t *testing.T) {
 	dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/examples/bookstore"}
@@ -29,5 +29,21 @@ func TestGenerateCode(t *testing.T) {
 		dmp := diffmatchpatch.New()
 		diffs := dmp.DiffMain(string(expCode), string(code), true)
 		t.Log(dmp.DiffPrettyText(diffs))
+	}
+}
+
+func TestGenerateCode2(t *testing.T) {
+	dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata"}
+	code, err := GenerateCode(dstPkg, "github.com/go-gad/sal/looker/testdata", []string{"Store"})
+	if err != nil {
+		t.Fatalf("Failed to generate a code: %+v", err)
+	}
+
+	t.Logf("\n%s", string(code))
+
+	if update {
+		if err = ioutil.WriteFile("../looker/testdata/store_client.go", code, 0666); err != nil {
+			t.Fatalf("failed to write file: %+v", err)
+		}
 	}
 }

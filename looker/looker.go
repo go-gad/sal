@@ -14,6 +14,17 @@ type Package struct {
 	Interfaces Interfaces
 }
 
+func (p *Package) ImportPaths() []string {
+	list := make([]string, 0)
+	if p.ImportPath.Path != "" {
+		list = append(list, p.ImportPath.Path)
+	}
+	for _, intf := range p.Interfaces {
+		list = append(list, intf.ImportPaths()...)
+	}
+	return list
+}
+
 // ImportElement represents the imported package.
 // Attribute `Alias` represents the optional alias for the package.
 //		import foo "github.com/fooooo/baaaar-pppkkkkggg"
@@ -66,6 +77,18 @@ func (intf *Interface) ImplementationName(dstPath string, prefix string) string 
 	return intf.ImportPath.Name() + "." + prefix + intf.UserType
 }
 
+func (intf *Interface) ImportPaths() []string {
+	list := make([]string, 0)
+	if intf.ImportPath.Path != "" {
+		list = append(list, intf.ImportPath.Path)
+	}
+
+	for _, m := range intf.Methods {
+		list = append(list, m.ImportPaths()...)
+	}
+	return list
+}
+
 type Interfaces []*Interface
 
 func LookAtInterface(typ reflect.Type) *Interface {
@@ -95,12 +118,24 @@ type Method struct {
 	Out  Parameters
 }
 
+func (m *Method) ImportPaths() []string {
+	list := make([]string, 0)
+	for _, prm := range m.In {
+		list = append(list, prm.ImportPaths()...)
+	}
+	for _, prm := range m.Out {
+		list = append(list, prm.ImportPaths()...)
+	}
+	return list
+}
+
 type Methods []*Method
 
 type Parameter interface {
 	Kind() string
 	Name(dstPath string) string
 	Pointer() bool
+	ImportPaths() []string
 }
 
 type Parameters []Parameter
@@ -143,6 +178,14 @@ func (prm *StructElement) Pointer() bool {
 	return prm.IsPointer
 }
 
+// todo: import path for fields
+func (prm *StructElement) ImportPaths() []string {
+	if prm.ImportPath.Path != "" {
+		return []string{prm.ImportPath.Path}
+	}
+	return []string{}
+}
+
 type SliceElement struct {
 	ImportPath ImportElement
 	UserType   string
@@ -173,6 +216,13 @@ func (prm *SliceElement) Pointer() bool {
 	return prm.IsPointer
 }
 
+func (prm *SliceElement) ImportPaths() []string {
+	if prm.ImportPath.Path != "" {
+		return []string{prm.ImportPath.Path}
+	}
+	return []string{}
+}
+
 type InterfaceElement struct {
 	ImportPath ImportElement
 	UserType   string
@@ -194,6 +244,13 @@ func (prm *InterfaceElement) Name(dstPath string) string {
 
 func (prm *InterfaceElement) Pointer() bool {
 	return false
+}
+
+func (prm *InterfaceElement) ImportPaths() []string {
+	if prm.ImportPath.Path != "" {
+		return []string{prm.ImportPath.Path}
+	}
+	return []string{}
 }
 
 type UnsupportedElement struct {
@@ -218,6 +275,13 @@ func (prm *UnsupportedElement) Pointer() bool {
 	return prm.IsPointer
 }
 
+func (prm *UnsupportedElement) ImportPaths() []string {
+	if prm.ImportPath.Path != "" {
+		return []string{prm.ImportPath.Path}
+	}
+	return []string{}
+}
+
 func LookAtParameter(at reflect.Type) Parameter {
 	var pointer bool
 	if at.Kind() == reflect.Ptr {
@@ -226,11 +290,7 @@ func LookAtParameter(at reflect.Type) Parameter {
 	}
 	var prm Parameter
 
-	alias := getAlias(at.String())
-	im := ImportElement{Path: at.PkgPath()}
-	if alias != "" && im.Name() != alias {
-		im.Alias = alias
-	}
+	im := GetImportElement(at)
 
 	switch at.Kind() {
 	case reflect.Struct:
@@ -263,18 +323,6 @@ func LookAtParameter(at reflect.Type) Parameter {
 	}
 
 	return prm
-}
-
-// return on []*foo.Body the string foo
-func getAlias(str string) string {
-	f := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
-	}
-	ar := strings.FieldsFunc(str, f)
-	if len(ar) == 2 {
-		return ar[0]
-	}
-	return ""
 }
 
 func IsProcessRower(s interface{}) bool {
@@ -326,4 +374,25 @@ func LookAtField(ft reflect.StructField) []Field {
 		Tag:        ft.Tag.Get(tagName),
 	}
 	return []Field{f}
+}
+
+func GetImportElement(typ reflect.Type) ImportElement {
+	alias := getAlias(typ.String())
+	im := ImportElement{Path: typ.PkgPath()}
+	if alias != "" && im.Name() != alias {
+		im.Alias = alias
+	}
+	return im
+}
+
+// return on []*foo.Body the string foo
+func getAlias(str string) string {
+	f := func(c rune) bool {
+		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
+	}
+	ar := strings.FieldsFunc(str, f)
+	if len(ar) == 2 {
+		return ar[0]
+	}
+	return ""
 }

@@ -84,6 +84,9 @@ func (intf *Interface) ImportPaths() []string {
 	}
 
 	for _, m := range intf.Methods {
+		if m.Name == "Tx" || m.Name == "BeginTx" {
+			continue
+		}
 		list = append(list, m.ImportPaths()...)
 	}
 	return list

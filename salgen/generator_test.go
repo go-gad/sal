@@ -8,7 +8,7 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
-var update bool = true
+var update bool = false
 
 func TestGenerateCode(t *testing.T) {
 	dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/examples/bookstore"}

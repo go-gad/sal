@@ -11,6 +11,7 @@ import (
 	pkg_ "github.com/go-gad/sal/examples/bookstore"
 	"github.com/go-gad/sal/looker"
 	"github.com/go-gad/sal/looker/testdata"
+	"github.com/go-gad/sal/looker/testdata/foo-bar"
 	"github.com/kr/pretty"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
@@ -132,6 +133,17 @@ func TestLookAtParameter(t *testing.T) {
 			kind: reflect.Interface.String(),
 			name: "error",
 			ptr:  false,
+		}, {
+			test: "alias",
+			typ:  reflect.TypeOf(foo.Body{}),
+			prm: &looker.StructElement{
+				ImportPath: looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata/foo-bar", Alias: "foo"},
+				UserType:   "Body",
+				IsPointer:  false,
+			},
+			kind: reflect.Struct.String(),
+			name: "foo.Body",
+			ptr:  false,
 		},
 	} {
 		t.Run(tc.test, func(t *testing.T) {
@@ -144,6 +156,16 @@ func TestLookAtParameter(t *testing.T) {
 			t.Logf("struct element %# v", pretty.Formatter(prm))
 		})
 	}
+}
+
+func TestLookAtParameter2(t *testing.T) {
+	typ := reflect.TypeOf([]*foo.Body{})
+	prm := looker.LookAtParameter(typ)
+	dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/looker"}
+	//dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata/foo-bar"}
+	t.Logf("NAME %s", prm.Name(dstPkg.Path))
+	t.Logf("parameter %# v", pretty.Formatter(prm))
+	t.Logf("%s", typ.String())
 }
 
 func TestLookAtFields(t *testing.T) {

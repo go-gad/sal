@@ -3,6 +3,8 @@ package looker
 import (
 	"path"
 	"reflect"
+	"strings"
+	"unicode"
 
 	"github.com/go-gad/sal"
 )
@@ -224,10 +226,16 @@ func LookAtParameter(at reflect.Type) Parameter {
 	}
 	var prm Parameter
 
+	alias := getAlias(at.String())
+	im := ImportElement{Path: at.PkgPath()}
+	if alias != "" && im.Name() != alias {
+		im.Alias = alias
+	}
+
 	switch at.Kind() {
 	case reflect.Struct:
 		prm = &StructElement{
-			ImportPath:   ImportElement{Path: at.PkgPath()},
+			ImportPath:   im,
 			UserType:     at.Name(),
 			IsPointer:    pointer,
 			Fields:       LookAtFields(at),
@@ -242,12 +250,12 @@ func LookAtParameter(at reflect.Type) Parameter {
 		}
 	case reflect.Interface:
 		prm = &InterfaceElement{
-			ImportPath: ImportElement{Path: at.PkgPath()},
+			ImportPath: im,
 			UserType:   at.Name(),
 		}
 	default:
 		prm = &UnsupportedElement{
-			ImportPath: ImportElement{Path: at.PkgPath()},
+			ImportPath: im,
 			UserType:   at.Name(),
 			BaseType:   at.Kind().String(),
 			IsPointer:  pointer,
@@ -255,6 +263,18 @@ func LookAtParameter(at reflect.Type) Parameter {
 	}
 
 	return prm
+}
+
+// return on []*foo.Body the string foo
+func getAlias(str string) string {
+	f := func(c rune) bool {
+		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
+	}
+	ar := strings.FieldsFunc(str, f)
+	if len(ar) == 2 {
+		return ar[0]
+	}
+	return ""
 }
 
 func IsProcessRower(s interface{}) bool {

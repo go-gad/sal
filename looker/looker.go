@@ -14,6 +14,17 @@ type Package struct {
 	Interfaces Interfaces
 }
 
+func (p *Package) ImportPaths() []string {
+	list := make([]string, 0)
+	if p.ImportPath.Path != "" {
+		list = append(list, p.ImportPath.Path)
+	}
+	for _, intf := range p.Interfaces {
+		list = append(list, intf.ImportPaths()...)
+	}
+	return list
+}
+
 // ImportElement represents the imported package.
 // Attribute `Alias` represents the optional alias for the package.
 //		import foo "github.com/fooooo/baaaar-pppkkkkggg"
@@ -66,6 +77,18 @@ func (intf *Interface) ImplementationName(dstPath string, prefix string) string 
 	return intf.ImportPath.Name() + "." + prefix + intf.UserType
 }
 
+func (intf *Interface) ImportPaths() []string {
+	list := make([]string, 0)
+	if intf.ImportPath.Path != "" {
+		list = append(list, intf.ImportPath.Path)
+	}
+
+	for _, m := range intf.Methods {
+		list = append(list, m.ImportPaths()...)
+	}
+	return list
+}
+
 type Interfaces []*Interface
 
 func LookAtInterface(typ reflect.Type) *Interface {
@@ -95,12 +118,24 @@ type Method struct {
 	Out  Parameters
 }
 
+func (m *Method) ImportPaths() []string {
+	list := make([]string, 0)
+	for _, prm := range m.In {
+		list = append(list, prm.ImportPaths()...)
+	}
+	for _, prm := range m.Out {
+		list = append(list, prm.ImportPaths()...)
+	}
+	return list
+}
+
 type Methods []*Method
 
 type Parameter interface {
 	Kind() string
 	Name(dstPath string) string
 	Pointer() bool
+	ImportPaths() []string
 }
 
 type Parameters []Parameter
@@ -143,6 +178,14 @@ func (prm *StructElement) Pointer() bool {
 	return prm.IsPointer
 }
 
+// todo: import path for fields
+func (prm *StructElement) ImportPaths() []string {
+	if prm.ImportPath.Path != "" {
+		return []string{prm.ImportPath.Path}
+	}
+	return []string{}
+}
+
 type SliceElement struct {
 	ImportPath ImportElement
 	UserType   string
@@ -173,6 +216,13 @@ func (prm *SliceElement) Pointer() bool {
 	return prm.IsPointer
 }
 
+func (prm *SliceElement) ImportPaths() []string {
+	if prm.ImportPath.Path != "" {
+		return []string{prm.ImportPath.Path}
+	}
+	return []string{}
+}
+
 type InterfaceElement struct {
 	ImportPath ImportElement
 	UserType   string
@@ -196,6 +246,13 @@ func (prm *InterfaceElement) Pointer() bool {
 	return false
 }
 
+func (prm *InterfaceElement) ImportPaths() []string {
+	if prm.ImportPath.Path != "" {
+		return []string{prm.ImportPath.Path}
+	}
+	return []string{}
+}
+
 type UnsupportedElement struct {
 	ImportPath ImportElement
 	UserType   string
@@ -216,6 +273,13 @@ func (prm *UnsupportedElement) Name(dstPath string) string {
 
 func (prm *UnsupportedElement) Pointer() bool {
 	return prm.IsPointer
+}
+
+func (prm *UnsupportedElement) ImportPaths() []string {
+	if prm.ImportPath.Path != "" {
+		return []string{prm.ImportPath.Path}
+	}
+	return []string{}
 }
 
 func LookAtParameter(at reflect.Type) Parameter {

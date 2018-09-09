@@ -377,6 +377,10 @@ type ImportPather interface {
 func ImportPaths(dirtyList []string, dstPath string) []string {
 	list := make([]string, 0)
 	for _, p := range dirtyList {
+		// todo: find mistake when import contains something from vendor
+		if strings.Contains(p, "/vendor/") {
+			continue
+		}
 		if p != "" && p != dstPath {
 			list = append(list, p)
 		}

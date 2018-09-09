@@ -31,3 +31,14 @@ func TestGenerateCode(t *testing.T) {
 		t.Log(dmp.DiffPrettyText(diffs))
 	}
 }
+
+func TestGenerateCode2(t *testing.T) {
+	dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata"}
+	code, err := GenerateCode(dstPkg, "github.com/go-gad/sal/looker/testdata", []string{"Store"})
+	if err != nil {
+		t.Fatalf("Failed to generate a code: %+v", err)
+	}
+
+	t.Logf("\n%s", string(code))
+
+}

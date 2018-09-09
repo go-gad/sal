@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-gad/sal"
+	"github.com/go-gad/sal/looker/testdata/foo-bar"
 )
 
 type Req1 struct {
@@ -30,4 +31,8 @@ type Lvl1 struct {
 type Lvl2 struct {
 	Foo string
 	Bar string
+}
+
+type Store interface {
+	UpdateAuthor(context.Context, *foo.Body) error
 }

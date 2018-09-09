@@ -1,12 +1,10 @@
 package looker_test
 
 import (
+	"fmt"
+	"io/ioutil"
 	"reflect"
 	"testing"
-
-	"io/ioutil"
-
-	"fmt"
 
 	pkg_ "github.com/go-gad/sal/examples/bookstore"
 	"github.com/go-gad/sal/looker"
@@ -44,6 +42,17 @@ func TestLookAtInterfaces(t *testing.T) {
 		diffs := dmp.DiffMain(string(exp), act, true)
 		t.Log(dmp.DiffPrettyText(diffs))
 	}
+}
+
+func TestLookAtInterfaces2(t *testing.T) {
+	pkgPath := "github.com/go-gad/sal/examples/bookstore"
+	var list = []reflect.Type{
+		reflect.TypeOf((*pkg_.Store)(nil)).Elem(),
+	}
+	pkg := looker.LookAtInterfaces(pkgPath, list)
+
+	t.Logf("package %# v", pretty.Formatter(pkg))
+
 }
 
 func TestLookAtInterface(t *testing.T) {
@@ -159,7 +168,7 @@ func TestLookAtParameter(t *testing.T) {
 }
 
 func TestLookAtParameter2(t *testing.T) {
-	typ := reflect.TypeOf([]*foo.Body{})
+	typ := reflect.TypeOf(foo.Body{})
 	prm := looker.LookAtParameter(typ)
 	dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/looker"}
 	//dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata/foo-bar"}

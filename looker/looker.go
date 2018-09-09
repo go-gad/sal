@@ -226,11 +226,7 @@ func LookAtParameter(at reflect.Type) Parameter {
 	}
 	var prm Parameter
 
-	alias := getAlias(at.String())
-	im := ImportElement{Path: at.PkgPath()}
-	if alias != "" && im.Name() != alias {
-		im.Alias = alias
-	}
+	im := GetImportElement(at)
 
 	switch at.Kind() {
 	case reflect.Struct:
@@ -263,18 +259,6 @@ func LookAtParameter(at reflect.Type) Parameter {
 	}
 
 	return prm
-}
-
-// return on []*foo.Body the string foo
-func getAlias(str string) string {
-	f := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
-	}
-	ar := strings.FieldsFunc(str, f)
-	if len(ar) == 2 {
-		return ar[0]
-	}
-	return ""
 }
 
 func IsProcessRower(s interface{}) bool {
@@ -326,4 +310,25 @@ func LookAtField(ft reflect.StructField) []Field {
 		Tag:        ft.Tag.Get(tagName),
 	}
 	return []Field{f}
+}
+
+func GetImportElement(typ reflect.Type) ImportElement {
+	alias := getAlias(typ.String())
+	im := ImportElement{Path: typ.PkgPath()}
+	if alias != "" && im.Name() != alias {
+		im.Alias = alias
+	}
+	return im
+}
+
+// return on []*foo.Body the string foo
+func getAlias(str string) string {
+	f := func(c rune) bool {
+		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
+	}
+	ar := strings.FieldsFunc(str, f)
+	if len(ar) == 2 {
+		return ar[0]
+	}
+	return ""
 }

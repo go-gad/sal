@@ -334,15 +334,27 @@ func IsProcessRower(s interface{}) bool {
 	return ok
 }
 
+// Field describes the fields of struct after reflection.
 type Field struct {
-	Name       string
+	// See the fields that describe Req struct.
+	// type Req struct {
+	//	ID   int64 `sql:"id"`
+	// }
+	// for Req.ID Name contains `ID`.
+	Name string
+	// ImportPath contains ImportElement.
 	ImportPath ImportElement
-	BaseType   string
-	UserType   string
-	Anonymous  bool
-	Tag        string
+	// for Req.ID BaseType contains `int64`.
+	BaseType string
+	// UserType contains type other then basic if it's defined otherwise basic.
+	UserType string
+	// Anonymous sets to true if field contains anonymous nested struct.
+	Anonymous bool
+	// Tag contains the value for tag with name `sql` if it's presented.
+	Tag string
 }
 
+// ColumnName returns the column name to use for mapping with sql response.
 func (f Field) ColumnName() string {
 	if f.Tag == "" {
 		return f.Name
@@ -350,10 +362,13 @@ func (f Field) ColumnName() string {
 	return f.Tag
 }
 
+// Fields is alias for slice of Field.
 type Fields []Field
 
+// tagName contains the name of tag of struct field to make mapping with sql response.
 const tagName = "sql"
 
+// LookAtFields receives the reflect.Type object of struct and returns the Fields.
 func LookAtFields(st reflect.Type) Fields {
 	fields := make(Fields, 0, st.NumField())
 	for i := 0; i < st.NumField(); i++ {
@@ -363,7 +378,9 @@ func LookAtFields(st reflect.Type) Fields {
 	return fields
 }
 
-func LookAtField(ft reflect.StructField) []Field {
+// LookAtField receive the reflected object of struct field and return Fields.
+// If field points to anonymous struct then LookAtFields will be called.
+func LookAtField(ft reflect.StructField) Fields {
 	if ft.Anonymous && ft.Type.Kind() == reflect.Struct {
 		// going to analyze embedded struct
 		return LookAtFields(ft.Type)

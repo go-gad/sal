@@ -277,8 +277,9 @@ func (ctrl *Controller) PrepareStmt(ctx context.Context, qh QueryHandler, query 
 		stmt *sql.Stmt
 	)
 
+	txOpened, _ := ctx.Value(ContextKeyTxOpened).(bool)
 	stmt = ctrl.findStmt(query)
-	if stmt == nil {
+	if stmt == nil && !txOpened {
 		stmt, err = ctrl.prepareStmt(ctx, qh, query)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to prepare stmt on query %q", query)
@@ -286,13 +287,19 @@ func (ctrl *Controller) PrepareStmt(ctx context.Context, qh QueryHandler, query 
 		ctrl.putStmt(query, stmt)
 	}
 
-	txOpened, _ := ctx.Value(ContextKeyTxOpened).(bool)
 	if txOpened {
 		txh, ok := qh.(*sql.Tx)
 		if !ok {
 			return nil, errors.New("failed to get transaction handler")
 		}
-		stmt = txh.StmtContext(ctx, stmt)
+		if stmt == nil {
+			stmt, err = ctrl.prepareStmt(ctx, txh, query)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to prepare stmt with tx on query %q", query)
+			}
+		} else {
+			stmt = txh.StmtContext(ctx, stmt)
+		}
 	}
 
 	return stmt, nil

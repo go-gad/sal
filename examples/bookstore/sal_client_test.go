@@ -130,10 +130,10 @@ func TestNewStoreController(t *testing.T) {
 	req2 := UpdateAuthorReq{ID: 123, Name: "John", Desc: "foo-bar"}
 
 	mock.ExpectBegin()
-	mock.ExpectPrepare(`INSERT INTO authors .+`) // on connection
+	//mock.ExpectPrepare(`INSERT INTO authors .+`) // on connection
 	mock.ExpectPrepare(`INSERT INTO authors .+`) // on transaction
 	mock.ExpectQuery(`INSERT INTO authors .+`).WithArgs(req1.Name, req1.Desc).WillReturnRows(rows)
-	mock.ExpectPrepare("UPDATE authors SET.+") // on connection
+	//mock.ExpectPrepare("UPDATE authors SET.+") // on connection
 	mock.ExpectPrepare("UPDATE authors SET.+") // on transaction
 	mock.ExpectExec("UPDATE authors SET.+").WithArgs(req2.Name, req2.Desc, req2.ID).WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()

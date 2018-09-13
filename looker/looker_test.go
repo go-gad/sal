@@ -153,6 +153,23 @@ func TestLookAtParameter(t *testing.T) {
 			kind: reflect.Struct.String(),
 			name: "foo.Body",
 			ptr:  false,
+		}, {
+			test: "alias for slice",
+			typ:  reflect.TypeOf(foo.List{}),
+			prm: &looker.SliceElement{
+				ImportPath: looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata/foo-bar", Alias: "foo"},
+				UserType:   "List",
+				Item: &looker.StructElement{
+					ImportPath:   looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata/foo-bar", Alias: "foo"},
+					UserType:     "Body",
+					IsPointer:    true,
+					ProcessRower: false,
+				},
+				IsPointer: false,
+			},
+			kind: reflect.Slice.String(),
+			name: "foo.List",
+			ptr:  false,
 		},
 	} {
 		t.Run(tc.test, func(t *testing.T) {
@@ -162,7 +179,7 @@ func TestLookAtParameter(t *testing.T) {
 			assert.Equal(tc.kind, prm.Kind())
 			assert.Equal(tc.name, prm.Name(dstPkg.Path))
 			assert.Equal(tc.ptr, prm.Pointer())
-			t.Logf("struct element %# v", pretty.Formatter(prm))
+			//t.Logf("struct element %# v", pretty.Formatter(prm))
 		})
 	}
 }

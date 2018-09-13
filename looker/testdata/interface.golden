@@ -142,7 +142,7 @@
             },
             Out: {
                 &looker.SliceElement{
-                    ImportPath: looker.ImportElement{},
+                    ImportPath: looker.ImportElement{Path:"", Alias:"bookstore"},
                     UserType:   "",
                     Item:       &looker.StructElement{
                         ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},

@@ -177,6 +177,16 @@ func TestLookAtParameter2(t *testing.T) {
 	t.Logf("%s", typ.String())
 }
 
+func TestLookAtParameter3(t *testing.T) {
+	typ := reflect.TypeOf(foo.List{})
+	prm := looker.LookAtParameter(typ)
+	dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/looker"}
+	//dstPkg := looker.ImportElement{Path: "github.com/go-gad/sal/looker/testdata/foo-bar"}
+	t.Logf("NAME %s", prm.Name(dstPkg.Path))
+	t.Logf("parameter %# v", pretty.Formatter(prm))
+	t.Logf("%s", typ.String())
+}
+
 func TestLookAtFields(t *testing.T) {
 	var typ reflect.Type = reflect.TypeOf(testdata.Req1{})
 	actFields := looker.LookAtFields(typ)

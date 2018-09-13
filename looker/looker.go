@@ -306,7 +306,7 @@ func LookAtParameter(at reflect.Type) Parameter {
 		}
 	case reflect.Slice:
 		prm = &SliceElement{
-			ImportPath: ImportElement{Path: at.PkgPath()},
+			ImportPath: im,
 			UserType:   at.Name(),
 			IsPointer:  pointer,
 			Item:       LookAtParameter(at.Elem()),

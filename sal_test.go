@@ -39,3 +39,15 @@ func TestMapIndex_NextVal(t *testing.T) {
 	assert.Equal(t, 3, ind.NextVal("foo"))
 	assert.Equal(t, 1, ind.NextVal("bar"))
 }
+
+func TestRowMap(t *testing.T) {
+	assert := assert.New(t)
+	rm := make(RowMap)
+	assert.Nil(rm.Get("foo"))
+	assert.Nil(rm.GetByIndex("foo", 0))
+	rm.Set("foo", 777)
+	assert.Equal(777, rm.Get("foo"))
+	assert.Equal(777, rm.GetByIndex("foo", 0))
+	assert.Equal(nil, rm.GetByIndex("foo", 1))
+
+}

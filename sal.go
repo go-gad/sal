@@ -27,9 +27,27 @@ func QueryArgs(query string) (string, []string) {
 }
 
 // RowMap contains mapping between column name in database and interface of value.
-type RowMap map[string]interface{}
+type RowMap map[string][]interface{}
 
-// todo: get index for map[string][]interface{}
+func (rm RowMap) Set(key string, val interface{}) {
+	rm[key] = append(rm[key], val)
+}
+
+func (rm RowMap) Get(key string) interface{} {
+	v := rm[key]
+	if len(v) == 0 {
+		return nil
+	}
+	return v[0]
+}
+
+func (rm RowMap) GetByIndex(key string, index int) interface{} {
+	v := rm[key]
+	if len(v) == 0 || len(v) < index+1 {
+		return nil
+	}
+	return v[index]
+}
 
 type mapIndex map[string]int
 

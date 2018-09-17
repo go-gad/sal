@@ -1,9 +1,8 @@
-package sal_test
+package sal
 
 import (
 	"testing"
 
-	"github.com/go-gad/sal"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,8 +24,18 @@ func TestQueryArgs(t *testing.T) {
 		},
 	}
 	for _, tc := range tt {
-		query, args := sal.QueryArgs(tc.QueryNamed)
+		query, args := QueryArgs(tc.QueryNamed)
 		assert.Equal(t, tc.QueryPg, query)
 		assert.Equal(t, tc.NamedArgs, args)
 	}
+}
+
+func TestMapIndex_NextVal(t *testing.T) {
+	ind := make(mapIndex)
+	assert.Equal(t, 0, ind.NextVal("foo"))
+	assert.Equal(t, 1, ind.NextVal("foo"))
+	assert.Equal(t, 2, ind.NextVal("foo"))
+	assert.Equal(t, 0, ind.NextVal("bar"))
+	assert.Equal(t, 3, ind.NextVal("foo"))
+	assert.Equal(t, 1, ind.NextVal("bar"))
 }

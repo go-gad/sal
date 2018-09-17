@@ -29,6 +29,20 @@ func QueryArgs(query string) (string, []string) {
 // RowMap contains mapping between column name in database and interface of value.
 type RowMap map[string]interface{}
 
+// todo: get index for map[string][]interface{}
+
+type mapIndex map[string]int
+
+func (m mapIndex) NextVal(key string) int {
+	v, ok := m[key]
+	if !ok {
+		m[key] = 1
+		return 0
+	}
+	m[key] = v + 1
+	return v
+}
+
 // ProcessQueryAndArgs process query with named args to driver specific query.
 func ProcessQueryAndArgs(query string, reqMap RowMap) (string, []interface{}) {
 	pgQuery, argsNames := QueryArgs(query)

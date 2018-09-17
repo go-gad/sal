@@ -25,10 +25,21 @@ func (r *Req2) ProcessRow(rm sal.RowMap) {}
 type Lvl1 struct {
 	Name string
 	Desc string
-	Lvl2
+	Lvl21
+	Lvl22
 }
 
-type Lvl2 struct {
+type Lvl21 struct {
+	Foo string
+	Bar string
+}
+type Lvl22 struct {
+	Foo string
+	Bar string
+	Lvl3
+}
+
+type Lvl3 struct {
 	Foo string
 	Bar string
 }

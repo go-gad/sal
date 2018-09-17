@@ -340,8 +340,8 @@ type Field struct {
 	// type Req struct {
 	//	ID   int64 `sql:"id"`
 	// }
-	// for Req.ID Name contains `ID`.
-	Name string
+	// for Req.ID KeyName contains `ID`.
+	KeyName string
 	// ImportPath contains ImportElement.
 	ImportPath ImportElement
 	// for Req.ID BaseType contains `int64`.
@@ -352,14 +352,21 @@ type Field struct {
 	Anonymous bool
 	// Tag contains the value for tag with name `sql` if it's presented.
 	Tag string
+	// todo
+	Parents []string
 }
 
 // ColumnName returns the column name to use for mapping with sql response.
 func (f Field) ColumnName() string {
 	if f.Tag == "" {
-		return f.Name
+		return f.KeyName
 	}
 	return f.Tag
+}
+
+func (f Field) Name() string {
+	path := append(f.Parents, f.KeyName)
+	return strings.Join(path, ".")
 }
 
 // Fields is alias for slice of Field.
@@ -383,15 +390,20 @@ func LookAtFields(st reflect.Type) Fields {
 func LookAtField(ft reflect.StructField) Fields {
 	if ft.Anonymous && ft.Type.Kind() == reflect.Struct {
 		// going to analyze embedded struct
-		return LookAtFields(ft.Type)
+		list := LookAtFields(ft.Type)
+		for i := range list {
+			list[i].Parents = append([]string{ft.Name}, list[i].Parents...)
+		}
+		return list
 	}
 	f := Field{
-		Name:       ft.Name,
+		KeyName:    ft.Name,
 		ImportPath: ImportElement{Path: ft.Type.PkgPath()},
 		BaseType:   ft.Type.Kind().String(),
 		UserType:   ft.Type.Name(),
 		Anonymous:  ft.Anonymous,
 		Tag:        ft.Tag.Get(tagName),
+		Parents:    make([]string, 0),
 	}
 	return []Field{f}
 }

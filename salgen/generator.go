@@ -126,7 +126,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	if req.Kind() == reflect.Struct.String() {
 		reqSt := req.(*looker.StructElement)
 		for _, field := range reqSt.Fields {
-			g.p("reqMap[%q] = &req.%s", field.ColumnName(), field.Name)
+			g.p("reqMap[%q] = &req.%s", field.ColumnName(), field.KeyName)
 		}
 		g.br()
 		if reqSt.ProcessRower {
@@ -221,7 +221,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	if respRow.Kind() == reflect.Struct.String() {
 		respSt := respRow.(*looker.StructElement)
 		for _, field := range respSt.Fields {
-			g.p("respMap[%q] = &resp.%s", field.ColumnName(), field.Name)
+			g.p("respMap[%q] = &resp.%s", field.ColumnName(), field.KeyName)
 		}
 		g.br()
 		if respSt.ProcessRower {

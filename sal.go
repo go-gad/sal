@@ -66,9 +66,22 @@ func ProcessQueryAndArgs(query string, reqMap RowMap) (string, []interface{}) {
 	pgQuery, argsNames := QueryArgs(query)
 	var args = make([]interface{}, 0, len(argsNames))
 	for _, name := range argsNames {
-		args = append(args, reqMap[name])
+		args = append(args, reqMap.Get(name))
 	}
 	return pgQuery, args
+}
+
+func GetDests(cols []string, respMap RowMap) []interface{} {
+	var (
+		ind  = make(mapIndex)
+		dest = make([]interface{}, 0, len(respMap))
+	)
+
+	for _, v := range cols {
+		dest = append(dest, respMap.GetByIndex(v, ind.NextVal(v)))
+	}
+
+	return dest
 }
 
 // ProcessRower is an interface that defines the signature of method of request or response

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-gad/sal"
+	"github.com/lib/pq"
 )
 
 //go:generate salgen -destination=./sal_client.go -package=github.com/go-gad/sal/examples/bookstore github.com/go-gad/sal/examples/bookstore Store
@@ -38,7 +39,7 @@ type GetAuthorsReq struct {
 }
 
 func (r GetAuthorsReq) ProcessRow(rowMap sal.RowMap) {
-	//rowMap["tags"] = pq.Array(r.Tags)
+	rowMap.AppendTo("tags", pq.Array(r.Tags))
 }
 
 func (r *GetAuthorsReq) Query() string {
@@ -54,7 +55,7 @@ type GetAuthorsResp struct {
 }
 
 func (r *GetAuthorsResp) ProcessRow(rowMap sal.RowMap) {
-	//rowMap["tags"] = pq.Array(&r.Tags)
+	rowMap.AppendTo("tags", pq.Array(&r.Tags))
 }
 
 type UpdateAuthorReq struct {

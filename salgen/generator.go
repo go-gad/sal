@@ -42,7 +42,6 @@ func (g *generator) Generate(pkg *looker.Package, dstPkg looker.ImportElement) e
 	}
 	g.p("%q", "github.com/pkg/errors")
 	g.p("%q", "github.com/go-gad/sal")
-
 	g.p(")")
 
 	for _, intf := range pkg.Interfaces {
@@ -126,7 +125,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	if req.Kind() == reflect.Struct.String() {
 		reqSt := req.(*looker.StructElement)
 		for _, field := range reqSt.Fields {
-			g.p("reqMap[%q] = &req.%s", field.ColumnName(), field.Name)
+			g.p("reqMap.AppendTo(%q, &req.%s)", field.ColumnName(), field.Path())
 		}
 		g.br()
 		if reqSt.ProcessRower {
@@ -221,7 +220,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	if respRow.Kind() == reflect.Struct.String() {
 		respSt := respRow.(*looker.StructElement)
 		for _, field := range respSt.Fields {
-			g.p("respMap[%q] = &resp.%s", field.ColumnName(), field.Name)
+			g.p("respMap.AppendTo(%q, &resp.%s)", field.ColumnName(), field.Name)
 		}
 		g.br()
 		if respSt.ProcessRower {
@@ -229,12 +228,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 			g.br()
 		}
 	}
-	g.p("var dest = make([]interface{}, 0, len(respMap))")
-	g.p("for _, v := range cols {")
-	g.p("if intr, ok := respMap[v]; ok {")
-	g.p("dest = append(dest, intr)")
-	g.p("}")
-	g.p("}")
+	g.p("dest := sal.GetDests(cols, respMap)")
 	g.br()
 
 	g.p("if err = rows.Scan(dest...); err != nil {")

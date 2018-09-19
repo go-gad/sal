@@ -29,7 +29,7 @@ func QueryArgs(query string) (string, []string) {
 // RowMap contains mapping between column name in database and interface of value.
 type RowMap map[string][]interface{}
 
-func (rm RowMap) Set(key string, val interface{}) {
+func (rm RowMap) AppendTo(key string, val interface{}) {
 	rm[key] = append(rm[key], val)
 }
 

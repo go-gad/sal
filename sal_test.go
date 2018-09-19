@@ -45,7 +45,7 @@ func TestRowMap(t *testing.T) {
 	rm := make(RowMap)
 	assert.Nil(rm.Get("foo"))
 	assert.Nil(rm.GetByIndex("foo", 0))
-	rm.Set("foo", 777)
+	rm.AppendTo("foo", 777)
 	assert.Equal(777, rm.Get("foo"))
 	assert.Equal(777, rm.GetByIndex("foo", 0))
 	assert.Equal(nil, rm.GetByIndex("foo", 1))

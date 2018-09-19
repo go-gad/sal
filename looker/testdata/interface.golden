@@ -21,6 +21,7 @@
                             UserType:   "IsolationLevel",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                         {
                             Name:       "ReadOnly",
@@ -29,6 +30,7 @@
                             UserType:   "bool",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                     },
                     ProcessRower: false,
@@ -64,6 +66,7 @@
                             UserType:   "string",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                         {
                             Name:       "Desc",
@@ -72,6 +75,7 @@
                             UserType:   "string",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                     },
                     ProcessRower: false,
@@ -90,6 +94,7 @@
                             UserType:   "int64",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                         {
                             Name:       "CreatedAt",
@@ -98,6 +103,7 @@
                             UserType:   "Time",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                     },
                     ProcessRower: false,
@@ -127,6 +133,7 @@
                             UserType:   "int64",
                             Anonymous:  false,
                             Tag:        "id",
+                            Parents:    {},
                         },
                         {
                             Name:       "Tags",
@@ -135,6 +142,7 @@
                             UserType:   "",
                             Anonymous:  false,
                             Tag:        "tags",
+                            Parents:    {},
                         },
                     },
                     ProcessRower: true,
@@ -156,6 +164,7 @@
                                 UserType:   "int64",
                                 Anonymous:  false,
                                 Tag:        "id",
+                                Parents:    {},
                             },
                             {
                                 Name:       "CreatedAt",
@@ -164,6 +173,7 @@
                                 UserType:   "Time",
                                 Anonymous:  false,
                                 Tag:        "created_at",
+                                Parents:    {},
                             },
                             {
                                 Name:       "Name",
@@ -172,6 +182,7 @@
                                 UserType:   "string",
                                 Anonymous:  false,
                                 Tag:        "name",
+                                Parents:    {},
                             },
                             {
                                 Name:       "Desc",
@@ -180,6 +191,7 @@
                                 UserType:   "string",
                                 Anonymous:  false,
                                 Tag:        "desc",
+                                Parents:    {},
                             },
                             {
                                 Name:       "Tags",
@@ -188,6 +200,7 @@
                                 UserType:   "",
                                 Anonymous:  false,
                                 Tag:        "tags",
+                                Parents:    {},
                             },
                         },
                         ProcessRower: true,
@@ -217,6 +230,7 @@
                             UserType:   "",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                         {
                             Name:       "ctrl",
@@ -225,6 +239,7 @@
                             UserType:   "",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                     },
                     ProcessRower: false,
@@ -250,6 +265,7 @@
                             UserType:   "int64",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                         {
                             Name:       "Name",
@@ -258,6 +274,7 @@
                             UserType:   "string",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                         {
                             Name:       "Desc",
@@ -266,6 +283,7 @@
                             UserType:   "string",
                             Anonymous:  false,
                             Tag:        "",
+                            Parents:    {},
                         },
                     },
                     ProcessRower: false,

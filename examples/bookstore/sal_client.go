@@ -75,8 +75,8 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (*Crea
 		rawQuery = req.Query()
 		reqMap   = make(sal.RowMap)
 	)
-	reqMap.AppendTo("Name", &req.Name)
-	reqMap.AppendTo("Desc", &req.Desc)
+	reqMap.AppendTo("Name", &req.BaseAuthor.Name)
+	reqMap.AppendTo("Desc", &req.BaseAuthor.Desc)
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "QueryRow")
@@ -140,7 +140,7 @@ func (s *SalStore) GetAuthors(ctx context.Context, req GetAuthorsReq) ([]*GetAut
 		reqMap   = make(sal.RowMap)
 	)
 	reqMap.AppendTo("id", &req.ID)
-	reqMap.AppendTo("tags", &req.Tags)
+	reqMap.AppendTo("tags", &req.Tags.Tags)
 
 	req.ProcessRow(reqMap)
 
@@ -183,7 +183,7 @@ func (s *SalStore) GetAuthors(ctx context.Context, req GetAuthorsReq) ([]*GetAut
 		respMap.AppendTo("created_at", &resp.CreatedAt)
 		respMap.AppendTo("name", &resp.Name)
 		respMap.AppendTo("desc", &resp.Desc)
-		respMap.AppendTo("tags", &resp.Tags)
+		respMap.AppendTo("tags", &resp.Tags.Tags)
 
 		resp.ProcessRow(respMap)
 
@@ -210,8 +210,8 @@ func (s *SalStore) UpdateAuthor(ctx context.Context, req *UpdateAuthorReq) error
 		reqMap   = make(sal.RowMap)
 	)
 	reqMap.AppendTo("ID", &req.ID)
-	reqMap.AppendTo("Name", &req.Name)
-	reqMap.AppendTo("Desc", &req.Desc)
+	reqMap.AppendTo("Name", &req.BaseAuthor.Name)
+	reqMap.AppendTo("Desc", &req.BaseAuthor.Desc)
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Exec")

@@ -39,7 +39,7 @@ type GetAuthorsReq struct {
 }
 
 func (r GetAuthorsReq) ProcessRow(rowMap sal.RowMap) {
-	rowMap.AppendTo("tags", pq.Array(r.Tags))
+	rowMap.Set("tags", pq.Array(r.Tags))
 }
 
 func (r *GetAuthorsReq) Query() string {
@@ -55,7 +55,8 @@ type GetAuthorsResp struct {
 }
 
 func (r *GetAuthorsResp) ProcessRow(rowMap sal.RowMap) {
-	rowMap.AppendTo("tags", pq.Array(&r.Tags))
+	rowMap.Set("tags", pq.Array(&r.Tags))
+	rowMap.Set("tags1", pq.Array(&r.Tags))
 }
 
 type UpdateAuthorReq struct {

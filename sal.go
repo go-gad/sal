@@ -41,6 +41,13 @@ func (rm RowMap) Get(key string) interface{} {
 	return v[0]
 }
 
+func (rm RowMap) Set(key string, val interface{}) {
+	if _, ok := rm[key]; ok {
+		rm[key][0] = val
+	}
+	rm[key] = []interface{}{val}
+}
+
 func (rm RowMap) GetByIndex(key string, index int) interface{} {
 	v := rm[key]
 	if len(v) == 0 || len(v) < index+1 {

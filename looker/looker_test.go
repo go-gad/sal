@@ -44,17 +44,6 @@ func TestLookAtInterfaces(t *testing.T) {
 	}
 }
 
-func TestLookAtInterfaces2(t *testing.T) {
-	pkgPath := "github.com/go-gad/sal/examples/bookstore"
-	var list = []reflect.Type{
-		reflect.TypeOf((*pkg_.Store)(nil)).Elem(),
-	}
-	pkg := looker.LookAtInterfaces(pkgPath, list)
-
-	t.Logf("package %# v", pretty.Formatter(pkg))
-
-}
-
 func TestLookAtInterface(t *testing.T) {
 	var typ reflect.Type = reflect.TypeOf((*pkg_.Store)(nil)).Elem()
 	intf := looker.LookAtInterface(typ)

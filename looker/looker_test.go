@@ -205,80 +205,128 @@ func TestLookAtParameter3(t *testing.T) {
 }
 
 func TestLookAtFields(t *testing.T) {
-	var typ reflect.Type = reflect.TypeOf(testdata.Req1{})
-	actFields := looker.LookAtFields(typ)
-
-	expFields := looker.Fields{
-		{
-			KeyName:    "ID",
-			ImportPath: looker.ImportElement{},
-			BaseType:   "int64",
-			UserType:   "int64",
-			Anonymous:  false,
-			Tag:        "id",
-		},
-		{
-			KeyName:    "KeyName",
-			ImportPath: looker.ImportElement{},
-			BaseType:   "string",
-			UserType:   "string",
-			Anonymous:  false,
-			Tag:        "",
-		},
-	}
-	assert.Equal(t, expFields, actFields)
-
-	t.Logf("struct field %# v", pretty.Formatter(actFields))
-}
-
-func TestLookAtFields_Nested(t *testing.T) {
-	var typ reflect.Type = reflect.TypeOf(testdata.Lvl1{})
-	actFields := looker.LookAtFields(typ)
-	/*
+	t.Run("common", func(t *testing.T) {
+		var typ reflect.Type = reflect.TypeOf(testdata.Req1{})
+		actFields := looker.LookAtFields(typ)
 		expFields := looker.Fields{
 			{
-				KeyName:    "KeyName",
+				Name:       "ID",
 				ImportPath: looker.ImportElement{},
-				BaseType:   "string",
-				UserType:   "string",
+				BaseType:   "int64",
+				UserType:   "int64",
 				Anonymous:  false,
-				Tag:        "",
+				Tag:        "id",
+				Parents:    []string{},
 			},
 			{
-				KeyName:    "Desc",
+				Name:       "Name",
 				ImportPath: looker.ImportElement{},
 				BaseType:   "string",
 				UserType:   "string",
 				Anonymous:  false,
 				Tag:        "",
-			},
-			{
-				KeyName:    "Foo",
-				ImportPath: looker.ImportElement{},
-				BaseType:   "string",
-				UserType:   "string",
-				Anonymous:  false,
-				Tag:        "",
-			},
-			{
-				KeyName:    "Bar",
-				ImportPath: looker.ImportElement{},
-				BaseType:   "string",
-				UserType:   "string",
-				Anonymous:  false,
-				Tag:        "",
+				Parents:    []string{},
 			},
 		}
-
 		assert.Equal(t, expFields, actFields)
-	*/
-	for _, v := range actFields {
-		t.Logf(">> req.%s", v.Name())
-	}
+		t.Logf("struct field %# v", pretty.Formatter(actFields))
+	})
 
-	t.Logf("struct field %# v", pretty.Formatter(actFields))
-	g := testdata.Lvl1{}
-	g.Lvl22.Lvl3.Bar = "dd"
+	t.Run("nested", func(t *testing.T) {
+		var typ reflect.Type = reflect.TypeOf(testdata.Lvl1{})
+		actFields := looker.LookAtFields(typ)
+		expFields := looker.Fields{
+			{
+				Name:       "Name",
+				ImportPath: looker.ImportElement{},
+				BaseType:   "string",
+				UserType:   "string",
+				Anonymous:  false,
+				Tag:        "",
+				Parents:    []string{},
+			},
+			{
+				Name:       "Desc",
+				ImportPath: looker.ImportElement{},
+				BaseType:   "string",
+				UserType:   "string",
+				Anonymous:  false,
+				Tag:        "",
+				Parents:    []string{},
+			},
+			{
+				Name:       "Foo",
+				ImportPath: looker.ImportElement{},
+				BaseType:   "string",
+				UserType:   "string",
+				Anonymous:  false,
+				Tag:        "",
+				Parents:    []string{"Lvl21"},
+			},
+			{
+				Name:       "Bar",
+				ImportPath: looker.ImportElement{},
+				BaseType:   "string",
+				UserType:   "string",
+				Anonymous:  false,
+				Tag:        "",
+				Parents:    []string{"Lvl21"},
+			},
+			{
+				Name:       "Foo",
+				ImportPath: looker.ImportElement{},
+				BaseType:   "string",
+				UserType:   "string",
+				Anonymous:  false,
+				Tag:        "",
+				Parents:    []string{"Lvl22"},
+			},
+			{
+				Name:       "Bar",
+				ImportPath: looker.ImportElement{},
+				BaseType:   "string",
+				UserType:   "string",
+				Anonymous:  false,
+				Tag:        "",
+				Parents:    []string{"Lvl22"},
+			},
+			{
+				Name:       "Foo",
+				ImportPath: looker.ImportElement{},
+				BaseType:   "string",
+				UserType:   "string",
+				Anonymous:  false,
+				Tag:        "",
+				Parents:    []string{"Lvl22", "Lvl3"},
+			},
+			{
+				Name:       "Bar",
+				ImportPath: looker.ImportElement{},
+				BaseType:   "string",
+				UserType:   "string",
+				Anonymous:  false,
+				Tag:        "",
+				Parents:    []string{"Lvl22", "Lvl3"},
+			},
+		}
+		assert.Equal(t, expFields, actFields)
+		t.Logf("struct field %# v", pretty.Formatter(actFields))
+	})
+}
+
+func TestField_Path(t *testing.T) {
+	f := looker.Field{
+		Name:       "Bar",
+		ImportPath: looker.ImportElement{},
+		BaseType:   "string",
+		UserType:   "string",
+		Anonymous:  false,
+		Tag:        "",
+		Parents:    []string{"Lvl22", "Lvl3"},
+	}
+	assert.Equal(t, "Lvl22.Lvl3.Bar", f.Path())
+	f.Parents = []string{}
+	assert.Equal(t, "Bar", f.Path())
 }
 
 func TestIsProcessRower(t *testing.T) {

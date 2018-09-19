@@ -340,8 +340,8 @@ type Field struct {
 	// type Req struct {
 	//	ID   int64 `sql:"id"`
 	// }
-	// for Req.ID KeyName contains `ID`.
-	KeyName string
+	// for Req.ID Name contains `ID`.
+	Name string
 	// ImportPath contains ImportElement.
 	ImportPath ImportElement
 	// for Req.ID BaseType contains `int64`.
@@ -359,13 +359,13 @@ type Field struct {
 // ColumnName returns the column name to use for mapping with sql response.
 func (f Field) ColumnName() string {
 	if f.Tag == "" {
-		return f.KeyName
+		return f.Name
 	}
 	return f.Tag
 }
 
-func (f Field) Name() string {
-	path := append(f.Parents, f.KeyName)
+func (f Field) Path() string {
+	path := append(f.Parents, f.Name)
 	return strings.Join(path, ".")
 }
 
@@ -397,7 +397,7 @@ func LookAtField(ft reflect.StructField) Fields {
 		return list
 	}
 	f := Field{
-		KeyName:    ft.Name,
+		Name:       ft.Name,
 		ImportPath: ImportElement{Path: ft.Type.PkgPath()},
 		BaseType:   ft.Type.Kind().String(),
 		UserType:   ft.Type.Name(),

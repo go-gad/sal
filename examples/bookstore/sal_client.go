@@ -76,8 +76,8 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (*Crea
 		rawQuery = req.Query()
 		reqMap   = make(sal.RowMap)
 	)
-	reqMap["Name"] = &req.Name
-	reqMap["Desc"] = &req.Desc
+	//reqMap["Name"] = &req.Name
+	//reqMap["Desc"] = &req.Desc
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "QueryRow")
@@ -118,8 +118,8 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (*Crea
 
 	var resp CreateAuthorResp
 	var respMap = make(sal.RowMap)
-	respMap["ID"] = &resp.ID
-	respMap["CreatedAt"] = &resp.CreatedAt
+	//respMap["ID"] = &resp.ID
+	//respMap["CreatedAt"] = &resp.CreatedAt
 
 	var dest = make([]interface{}, 0, len(respMap))
 	for _, v := range cols {
@@ -145,8 +145,8 @@ func (s *SalStore) GetAuthors(ctx context.Context, req GetAuthorsReq) ([]*GetAut
 		rawQuery = req.Query()
 		reqMap   = make(sal.RowMap)
 	)
-	reqMap["id"] = &req.ID
-	reqMap["tags"] = &req.Tags
+	//reqMap["id"] = &req.ID
+	//reqMap["tags"] = &req.Tags
 
 	req.ProcessRow(reqMap)
 
@@ -185,11 +185,11 @@ func (s *SalStore) GetAuthors(ctx context.Context, req GetAuthorsReq) ([]*GetAut
 	for rows.Next() {
 		var resp GetAuthorsResp
 		var respMap = make(sal.RowMap)
-		respMap["id"] = &resp.ID
-		respMap["created_at"] = &resp.CreatedAt
-		respMap["name"] = &resp.Name
-		respMap["desc"] = &resp.Desc
-		respMap["tags"] = &resp.Tags
+		//respMap["id"] = &resp.ID
+		//respMap["created_at"] = &resp.CreatedAt
+		//respMap["name"] = &resp.Name
+		//respMap["desc"] = &resp.Desc
+		//respMap["tags"] = &resp.Tags
 
 		resp.ProcessRow(respMap)
 
@@ -220,9 +220,9 @@ func (s *SalStore) UpdateAuthor(ctx context.Context, req *UpdateAuthorReq) error
 		rawQuery = req.Query()
 		reqMap   = make(sal.RowMap)
 	)
-	reqMap["ID"] = &req.ID
-	reqMap["Name"] = &req.Name
-	reqMap["Desc"] = &req.Desc
+	//reqMap["ID"] = &req.ID
+	//reqMap["Name"] = &req.Name
+	//reqMap["Desc"] = &req.Desc
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Exec")

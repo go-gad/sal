@@ -135,18 +135,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	g.p("pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)")
 	g.br()
 
-	var errRespStr string
-	if operation != sal.OperationTypeExec {
-		if resp.Pointer() {
-			errRespStr = "nil"
-		} else {
-			if resp.Kind() == reflect.Struct.String() {
-				errRespStr = resp.Name(dstPkg.Path) + "{}"
-			} else {
-				errRespStr = "nil"
-			}
-		}
-	}
+	var errRespStr = responseErrStr(operation, resp, dstPkg.Path)
 
 	g.p("stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)")
 	g.p("if err != nil {")
@@ -377,4 +366,21 @@ func ImportPaths(dirtyList []string, dstPath string) []string {
 	}
 
 	return list
+}
+
+func responseErrStr(operation sal.OperationType, resp looker.Parameter, dstPath string) string {
+	var errRespStr string
+	if operation != sal.OperationTypeExec {
+		if resp.Pointer() {
+			errRespStr = "nil"
+		} else {
+			if resp.Kind() == reflect.Struct.String() {
+				errRespStr = resp.Name(dstPath) + "{}"
+			} else {
+				errRespStr = "nil"
+			}
+		}
+	}
+
+	return errRespStr
 }

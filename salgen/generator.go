@@ -126,19 +126,6 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	g.p("reqMap = make(sal.RowMap)")
 	g.p(")")
 	g.GenerateRowMap(req, "reqMap", "req")
-	//if req.Kind() == reflect.Struct.String() {
-	//	reqSt := req.(*looker.StructElement)
-	//	for _, field := range reqSt.Fields {
-	//		g.p("reqMap.AppendTo(%q, &req.%s)", field.ColumnName(), field.Path())
-	//	}
-	//	g.br()
-	//	if reqSt.ProcessRower {
-	//		g.p("req.ProcessRow(reqMap)")
-	//		g.br()
-	//	}
-	//} else {
-	//	return errors.New("unsupported type of request variable")
-	//}
 
 	g.p("ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)")
 	g.p("ctx = context.WithValue(ctx, sal.ContextKeyOperationType, %q)", operation.String())
@@ -222,17 +209,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	g.p("var %s %s", respRowStr, respRow.Name(dstPkg.Path))
 	g.p("var respMap = make(sal.RowMap)")
 	g.GenerateRowMap(respRow, "respMap", "resp")
-	//if respRow.Kind() == reflect.Struct.String() {
-	//	respSt := respRow.(*looker.StructElement)
-	//	for _, field := range respSt.Fields {
-	//		g.p("respMap.AppendTo(%q, &resp.%s)", field.ColumnName(), field.Path())
-	//	}
-	//	g.br()
-	//	if respSt.ProcessRower {
-	//		g.p("%s.ProcessRow(respMap)", respRowStr)
-	//		g.br()
-	//	}
-	//}
+
 	g.p("dest := sal.GetDests(cols, respMap)")
 	g.br()
 

@@ -28,7 +28,7 @@ func NewStore(h sal.QueryHandler, options ...sal.ClientOption) *SalStore {
 func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, error) {
 	dbConn, ok := s.handler.(sal.TransactionBegin)
 	if !ok {
-		return nil, errors.New("oops")
+		return nil, errors.New("handler doesn't satisfy the interface TransactionBegin")
 	}
 	var (
 		err error

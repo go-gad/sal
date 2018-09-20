@@ -34,15 +34,7 @@ func (g *generator) Generate(pkg *looker.Package, dstPkg looker.ImportElement) e
 	g.p("package %v", dstPkg.Name())
 
 	paths := ImportPaths(pkg.ImportPaths(), dstPkg.Path)
-
-	g.p("import (")
-	g.p("%q", "database/sql")
-	for _, p := range paths {
-		g.p("%q", p)
-	}
-	g.p("%q", "github.com/pkg/errors")
-	g.p("%q", "github.com/go-gad/sal")
-	g.p(")")
+	g.GenerateImportPaths(paths)
 
 	for _, intf := range pkg.Interfaces {
 		if err := g.GenerateInterface(dstPkg, intf); err != nil {
@@ -53,6 +45,17 @@ func (g *generator) Generate(pkg *looker.Package, dstPkg looker.ImportElement) e
 	}
 
 	return nil
+}
+
+func (g *generator) GenerateImportPaths(paths []string) {
+	g.p("import (")
+	g.p("%q", "database/sql")
+	for _, p := range paths {
+		g.p("%q", p)
+	}
+	g.p("%q", "github.com/pkg/errors")
+	g.p("%q", "github.com/go-gad/sal")
+	g.p(")")
 }
 
 func (g *generator) GenerateInterface(dstPkg looker.ImportElement, intf *looker.Interface) error {

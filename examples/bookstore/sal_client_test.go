@@ -36,7 +36,7 @@ func TestSalStore_CreateAuthor(t *testing.T) {
 
 	client := NewStore(db, sal.BeforeQuery(b1))
 
-	req := CreateAuthorReq{Name: "foo", Desc: "Bar"}
+	req := CreateAuthorReq{BaseAuthor{Name: "foo", Desc: "Bar"}}
 
 	expResp := CreateAuthorResp{ID: 1, CreatedAt: time.Now().Truncate(time.Millisecond)}
 	rows := sqlmock.NewRows([]string{"ID", "CreatedAt"}).AddRow(expResp.ID, expResp.CreatedAt)
@@ -61,21 +61,21 @@ func TestSalStore_GetAuthors(t *testing.T) {
 	defer db.Close()
 	client := NewStore(db)
 
-	req := GetAuthorsReq{ID: 123, Tags: []int64{33, 44, 55}}
+	req := GetAuthorsReq{ID: 123, Tags: Tags{Tags: []int64{33, 44, 55}}}
 
 	expResp := []*GetAuthorsResp{
-		&GetAuthorsResp{ID: 10, Name: "Bob", Desc: "d1", Tags: []int64{1, 2, 3}, CreatedAt: time.Now().Truncate(time.Millisecond)},
-		&GetAuthorsResp{ID: 20, Name: "Jhn", Desc: "d2", Tags: []int64{4, 5, 6}, CreatedAt: time.Now().Truncate(time.Millisecond)},
-		&GetAuthorsResp{ID: 30, Name: "Max", Desc: "d3", Tags: []int64{6, 7, 8}, CreatedAt: time.Now().Truncate(time.Millisecond)},
+		&GetAuthorsResp{ID: 10, Name: "Bob", Desc: "d1", Tags: Tags{Tags: []int64{1, 2, 3}}, CreatedAt: time.Now().Truncate(time.Millisecond)},
+		&GetAuthorsResp{ID: 20, Name: "Jhn", Desc: "d2", Tags: Tags{Tags: []int64{4, 5, 6}}, CreatedAt: time.Now().Truncate(time.Millisecond)},
+		&GetAuthorsResp{ID: 30, Name: "Max", Desc: "d3", Tags: Tags{Tags: []int64{6, 7, 8}}, CreatedAt: time.Now().Truncate(time.Millisecond)},
 	}
 
 	rows := sqlmock.NewRows([]string{"id", "created_at", "name", "desc", "tags"})
 	for _, v := range expResp {
-		rows = rows.AddRow(v.ID, v.CreatedAt, v.Name, v.Desc, dv(v.Tags))
+		rows = rows.AddRow(v.ID, v.CreatedAt, v.Name, v.Desc, dv(v.Tags.Tags))
 	}
 
 	mock.ExpectPrepare(`SELECT id, created_at, name,.+`)
-	mock.ExpectQuery(`SELECT id, created_at, name,.+`).WithArgs(req.ID, pq.Array(req.Tags)).WillReturnRows(rows)
+	mock.ExpectQuery(`SELECT id, created_at, name,.+`).WithArgs(req.ID, pq.Array(req.Tags.Tags)).WillReturnRows(rows)
 
 	resp, err := client.GetAuthors(context.Background(), req)
 	assert.Equal(t, expResp, resp)
@@ -91,7 +91,7 @@ func TestSalStore_UpdateAuthor(t *testing.T) {
 	defer db.Close()
 	client := NewStore(db)
 
-	req := UpdateAuthorReq{ID: 123, Name: "John", Desc: "foo-bar"}
+	req := UpdateAuthorReq{ID: 123, BaseAuthor: BaseAuthor{Name: "John", Desc: "foo-bar"}}
 
 	mock.ExpectPrepare("UPDATE authors SET.+")
 	mock.ExpectExec("UPDATE authors SET.+").WithArgs(req.Name, req.Desc, req.ID).WillReturnResult(sqlmock.NewResult(0, 1))
@@ -124,10 +124,10 @@ func TestNewStoreController(t *testing.T) {
 	}
 	client := NewStore(db, sal.BeforeQuery(b1))
 
-	req1 := CreateAuthorReq{Name: "foo", Desc: "Bar"}
+	req1 := CreateAuthorReq{BaseAuthor{Name: "foo", Desc: "Bar"}}
 	rows := sqlmock.NewRows([]string{"ID", "CreatedAt"}).AddRow(int64(1), time.Now().Truncate(time.Millisecond))
 
-	req2 := UpdateAuthorReq{ID: 123, Name: "John", Desc: "foo-bar"}
+	req2 := UpdateAuthorReq{ID: 123, BaseAuthor: BaseAuthor{Name: "John", Desc: "foo-bar"}}
 
 	mock.ExpectBegin()
 	//mock.ExpectPrepare(`INSERT INTO authors .+`) // on connection

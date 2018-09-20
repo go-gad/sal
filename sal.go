@@ -27,16 +27,68 @@ func QueryArgs(query string) (string, []string) {
 }
 
 // RowMap contains mapping between column name in database and interface of value.
-type RowMap map[string]interface{}
+type RowMap map[string][]interface{}
+
+func (rm RowMap) AppendTo(key string, val interface{}) {
+	rm[key] = append(rm[key], val)
+}
+
+func (rm RowMap) Get(key string) interface{} {
+	v := rm[key]
+	if len(v) == 0 {
+		return nil
+	}
+	return v[0]
+}
+
+func (rm RowMap) Set(key string, val interface{}) {
+	if _, ok := rm[key]; ok {
+		rm[key][0] = val
+	}
+	rm[key] = []interface{}{val}
+}
+
+func (rm RowMap) GetByIndex(key string, index int) interface{} {
+	v := rm[key]
+	if len(v) == 0 || len(v) < index+1 {
+		return nil
+	}
+	return v[index]
+}
+
+type mapIndex map[string]int
+
+func (m mapIndex) NextVal(key string) int {
+	v, ok := m[key]
+	if !ok {
+		m[key] = 1
+		return 0
+	}
+	m[key] = v + 1
+	return v
+}
 
 // ProcessQueryAndArgs process query with named args to driver specific query.
 func ProcessQueryAndArgs(query string, reqMap RowMap) (string, []interface{}) {
 	pgQuery, argsNames := QueryArgs(query)
 	var args = make([]interface{}, 0, len(argsNames))
 	for _, name := range argsNames {
-		args = append(args, reqMap[name])
+		args = append(args, reqMap.Get(name))
 	}
 	return pgQuery, args
+}
+
+func GetDests(cols []string, respMap RowMap) []interface{} {
+	var (
+		ind  = make(mapIndex)
+		dest = make([]interface{}, 0, len(respMap))
+	)
+
+	for _, v := range cols {
+		dest = append(dest, respMap.GetByIndex(v, ind.NextVal(v)))
+	}
+
+	return dest
 }
 
 // ProcessRower is an interface that defines the signature of method of request or response

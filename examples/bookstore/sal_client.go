@@ -75,8 +75,8 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (*Crea
 		rawQuery = req.Query()
 		reqMap   = make(sal.RowMap)
 	)
-	reqMap["Name"] = &req.Name
-	reqMap["Desc"] = &req.Desc
+	reqMap.AppendTo("Name", &req.BaseAuthor.Name)
+	reqMap.AppendTo("Desc", &req.BaseAuthor.Desc)
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "QueryRow")
@@ -117,15 +117,10 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (*Crea
 
 	var resp CreateAuthorResp
 	var respMap = make(sal.RowMap)
-	respMap["ID"] = &resp.ID
-	respMap["CreatedAt"] = &resp.CreatedAt
+	respMap.AppendTo("ID", &resp.ID)
+	respMap.AppendTo("CreatedAt", &resp.CreatedAt)
 
-	var dest = make([]interface{}, 0, len(respMap))
-	for _, v := range cols {
-		if intr, ok := respMap[v]; ok {
-			dest = append(dest, intr)
-		}
-	}
+	dest := sal.GetDests(cols, respMap)
 
 	if err = rows.Scan(dest...); err != nil {
 		return nil, errors.Wrap(err, "failed to scan row")
@@ -144,8 +139,8 @@ func (s *SalStore) GetAuthors(ctx context.Context, req GetAuthorsReq) ([]*GetAut
 		rawQuery = req.Query()
 		reqMap   = make(sal.RowMap)
 	)
-	reqMap["id"] = &req.ID
-	reqMap["tags"] = &req.Tags
+	reqMap.AppendTo("id", &req.ID)
+	reqMap.AppendTo("tags", &req.Tags.Tags)
 
 	req.ProcessRow(reqMap)
 
@@ -184,20 +179,15 @@ func (s *SalStore) GetAuthors(ctx context.Context, req GetAuthorsReq) ([]*GetAut
 	for rows.Next() {
 		var resp GetAuthorsResp
 		var respMap = make(sal.RowMap)
-		respMap["id"] = &resp.ID
-		respMap["created_at"] = &resp.CreatedAt
-		respMap["name"] = &resp.Name
-		respMap["desc"] = &resp.Desc
-		respMap["tags"] = &resp.Tags
+		respMap.AppendTo("id", &resp.ID)
+		respMap.AppendTo("created_at", &resp.CreatedAt)
+		respMap.AppendTo("name", &resp.Name)
+		respMap.AppendTo("desc", &resp.Desc)
+		respMap.AppendTo("tags", &resp.Tags.Tags)
 
 		resp.ProcessRow(respMap)
 
-		var dest = make([]interface{}, 0, len(respMap))
-		for _, v := range cols {
-			if intr, ok := respMap[v]; ok {
-				dest = append(dest, intr)
-			}
-		}
+		dest := sal.GetDests(cols, respMap)
 
 		if err = rows.Scan(dest...); err != nil {
 			return nil, errors.Wrap(err, "failed to scan row")
@@ -219,9 +209,9 @@ func (s *SalStore) UpdateAuthor(ctx context.Context, req *UpdateAuthorReq) error
 		rawQuery = req.Query()
 		reqMap   = make(sal.RowMap)
 	)
-	reqMap["ID"] = &req.ID
-	reqMap["Name"] = &req.Name
-	reqMap["Desc"] = &req.Desc
+	reqMap.AppendTo("ID", &req.ID)
+	reqMap.AppendTo("Name", &req.BaseAuthor.Name)
+	reqMap.AppendTo("Desc", &req.BaseAuthor.Desc)
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Exec")

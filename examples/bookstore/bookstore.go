@@ -19,9 +19,13 @@ type Store interface {
 	UpdateAuthor(context.Context, *UpdateAuthorReq) error
 }
 
-type CreateAuthorReq struct {
+type BaseAuthor struct {
 	Name string
 	Desc string
+}
+
+type CreateAuthorReq struct {
+	BaseAuthor
 }
 
 func (cr *CreateAuthorReq) Query() string {
@@ -33,13 +37,17 @@ type CreateAuthorResp struct {
 	CreatedAt time.Time
 }
 
-type GetAuthorsReq struct {
-	ID   int64   `sql:"id"`
+type Tags struct {
 	Tags []int64 `sql:"tags"`
 }
 
+type GetAuthorsReq struct {
+	ID int64 `sql:"id"`
+	Tags
+}
+
 func (r GetAuthorsReq) ProcessRow(rowMap sal.RowMap) {
-	rowMap["tags"] = pq.Array(r.Tags)
+	rowMap.Set("tags", pq.Array(r.Tags.Tags))
 }
 
 func (r *GetAuthorsReq) Query() string {
@@ -51,17 +59,16 @@ type GetAuthorsResp struct {
 	CreatedAt time.Time `sql:"created_at"`
 	Name      string    `sql:"name"`
 	Desc      string    `sql:"desc"`
-	Tags      []int64   `sql:"tags"`
+	Tags
 }
 
 func (r *GetAuthorsResp) ProcessRow(rowMap sal.RowMap) {
-	rowMap["tags"] = pq.Array(&r.Tags)
+	rowMap.Set("tags", pq.Array(&r.Tags.Tags))
 }
 
 type UpdateAuthorReq struct {
-	ID   int64
-	Name string
-	Desc string
+	ID int64
+	BaseAuthor
 }
 
 func (r *UpdateAuthorReq) Query() string {

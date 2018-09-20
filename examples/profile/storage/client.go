@@ -4,7 +4,6 @@ package storage
 import (
 	"context"
 	"database/sql"
-
 	"github.com/go-gad/sal"
 	"github.com/pkg/errors"
 )
@@ -111,17 +110,12 @@ func (s *SalStore) AllUsers(ctx context.Context, req AllUsersReq) ([]*AllUsersRe
 	for rows.Next() {
 		var resp AllUsersResp
 		var respMap = make(sal.RowMap)
-		respMap["id"] = &resp.ID
-		respMap["name"] = &resp.Name
-		respMap["email"] = &resp.Email
-		respMap["created_at"] = &resp.CreatedAt
+		respMap.AppendTo("id", &resp.ID)
+		respMap.AppendTo("name", &resp.Name)
+		respMap.AppendTo("email", &resp.Email)
+		respMap.AppendTo("created_at", &resp.CreatedAt)
 
-		var dest = make([]interface{}, 0, len(respMap))
-		for _, v := range cols {
-			if intr, ok := respMap[v]; ok {
-				dest = append(dest, intr)
-			}
-		}
+		dest := sal.GetDests(cols, respMap)
 
 		if err = rows.Scan(dest...); err != nil {
 			return nil, errors.Wrap(err, "failed to scan row")
@@ -143,8 +137,8 @@ func (s *SalStore) CreateUser(ctx context.Context, req CreateUserReq) (*CreateUs
 		rawQuery = req.Query()
 		reqMap   = make(sal.RowMap)
 	)
-	reqMap["name"] = &req.Name
-	reqMap["email"] = &req.Email
+	reqMap.AppendTo("name", &req.Name)
+	reqMap.AppendTo("email", &req.Email)
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "QueryRow")
@@ -185,15 +179,10 @@ func (s *SalStore) CreateUser(ctx context.Context, req CreateUserReq) (*CreateUs
 
 	var resp CreateUserResp
 	var respMap = make(sal.RowMap)
-	respMap["id"] = &resp.ID
-	respMap["created_at"] = &resp.CreatedAt
+	respMap.AppendTo("id", &resp.ID)
+	respMap.AppendTo("created_at", &resp.CreatedAt)
 
-	var dest = make([]interface{}, 0, len(respMap))
-	for _, v := range cols {
-		if intr, ok := respMap[v]; ok {
-			dest = append(dest, intr)
-		}
-	}
+	dest := sal.GetDests(cols, respMap)
 
 	if err = rows.Scan(dest...); err != nil {
 		return nil, errors.Wrap(err, "failed to scan row")

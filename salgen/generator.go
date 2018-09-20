@@ -367,10 +367,6 @@ func calcOperationType(prms looker.Parameters) sal.OperationType {
 	return sal.OperationTypeQueryRow
 }
 
-type ImportPather interface {
-	ImportPaths() []string
-}
-
 func ImportPaths(dirtyList []string, dstPath string) []string {
 	list := make([]string, 0)
 	for _, p := range dirtyList {

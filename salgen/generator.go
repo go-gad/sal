@@ -141,7 +141,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 			errRespStr = "nil"
 		} else {
 			if resp.Kind() == reflect.Struct.String() {
-				errRespStr = req.Name(dstPkg.Path) + "{}"
+				errRespStr = resp.Name(dstPkg.Path) + "{}"
 			} else {
 				errRespStr = "nil"
 			}

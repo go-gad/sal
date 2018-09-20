@@ -14,7 +14,8 @@ type Store interface {
 	BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, error)
 	sal.Txer
 
-	CreateAuthor(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)
+	CreateAuthor(context.Context, CreateAuthorReq) (CreateAuthorResp, error)
+	CreateAuthorPtr(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)
 	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)
 	UpdateAuthor(context.Context, *UpdateAuthorReq) error
 }

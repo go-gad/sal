@@ -69,7 +69,7 @@ func (s *SalStore) Tx() *sal.WrappedTx {
 	return nil
 }
 
-func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (*CreateAuthorResp, error) {
+func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (CreateAuthorResp, error) {
 	var (
 		err      error
 		rawQuery = req.Query()
@@ -81,6 +81,70 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (*Crea
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "QueryRow")
 	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "CreateAuthor")
+
+	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
+
+	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	if err != nil {
+		return CreateAuthorResp{}, errors.WithStack(err)
+	}
+
+	for _, fn := range s.ctrl.BeforeQuery {
+		var fnz sal.FinalizerFunc
+		ctx, fnz = fn(ctx, rawQuery, req)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
+	rows, err := stmt.QueryContext(ctx, args...)
+	if err != nil {
+		return CreateAuthorResp{}, errors.Wrap(err, "failed to execute Query")
+	}
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		return CreateAuthorResp{}, errors.Wrap(err, "failed to fetch columns")
+	}
+
+	if !rows.Next() {
+		if err = rows.Err(); err != nil {
+			return CreateAuthorResp{}, errors.Wrap(err, "rows error")
+		}
+		return CreateAuthorResp{}, sql.ErrNoRows
+	}
+
+	var resp CreateAuthorResp
+	var respMap = make(sal.RowMap)
+	respMap.AppendTo("ID", &resp.ID)
+	respMap.AppendTo("CreatedAt", &resp.CreatedAt)
+
+	dest := sal.GetDests(cols, respMap)
+
+	if err = rows.Scan(dest...); err != nil {
+		return CreateAuthorResp{}, errors.Wrap(err, "failed to scan row")
+	}
+
+	if err = rows.Err(); err != nil {
+		return CreateAuthorResp{}, errors.Wrap(err, "something failed during iteration")
+	}
+
+	return resp, nil
+}
+
+func (s *SalStore) CreateAuthorPtr(ctx context.Context, req CreateAuthorReq) (*CreateAuthorResp, error) {
+	var (
+		err      error
+		rawQuery = req.Query()
+		reqMap   = make(sal.RowMap)
+	)
+	reqMap.AppendTo("Name", &req.BaseAuthor.Name)
+	reqMap.AppendTo("Desc", &req.BaseAuthor.Desc)
+
+	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "QueryRow")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "CreateAuthorPtr")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 

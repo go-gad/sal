@@ -44,7 +44,7 @@ func TestSalStore_CreateAuthor(t *testing.T) {
 	mock.ExpectQuery(`INSERT INTO authors .+`).WithArgs(req.Name, req.Desc).WillReturnRows(rows)
 
 	resp, err := client.CreateAuthor(context.Background(), req)
-	assert.Equal(t, &expResp, resp)
+	assert.Equal(t, expResp, resp)
 	assert.Nil(t, mock.ExpectationsWereMet())
 }
 

@@ -271,7 +271,7 @@ func (g *generator) GenerateBeginTx(dstPkg looker.ImportElement, intf *looker.In
 	g.p("func (s *%s) BeginTx(ctx context.Context, opts *sql.TxOptions) (%s, error) {", intf.ImplementationName(dstPkg.Path, Prefix), intf.Name(dstPkg.Path))
 	g.p("dbConn, ok := s.handler.(sal.TransactionBegin)")
 	g.p("if !ok {")
-	g.p("return nil, errors.New(%q)", "oops")
+	g.p("return nil, errors.New(%q)", "handler doesn't satisfy the interface TransactionBegin")
 	g.p("}")
 	g.p("var (")
 	g.p("err error")

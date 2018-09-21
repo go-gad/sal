@@ -11,6 +11,7 @@ import (
 type SalStore struct {
 	Store
 	handler  sal.QueryHandler
+	parent   sal.QueryHandler
 	ctrl     *sal.Controller
 	txOpened bool
 }
@@ -28,7 +29,7 @@ func NewStore(h sal.QueryHandler, options ...sal.ClientOption) *SalStore {
 func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, error) {
 	dbConn, ok := s.handler.(sal.TransactionBegin)
 	if !ok {
-		return nil, errors.New("oops")
+		return nil, errors.New("handler doesn't satisfy the interface TransactionBegin")
 	}
 	var (
 		err error
@@ -55,6 +56,7 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, err
 
 	newClient := &SalStore{
 		handler:  tx,
+		parent:   s.handler,
 		ctrl:     s.ctrl,
 		txOpened: true,
 	}
@@ -81,7 +83,7 @@ func (s *SalStore) AllUsers(ctx context.Context, req AllUsersReq) ([]*AllUsersRe
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
-	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	stmt, err := s.ctrl.PrepareStmt(ctx, s.parent, s.handler, pgQuery)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -146,7 +148,7 @@ func (s *SalStore) CreateUser(ctx context.Context, req CreateUserReq) (*CreateUs
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
-	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	stmt, err := s.ctrl.PrepareStmt(ctx, s.parent, s.handler, pgQuery)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

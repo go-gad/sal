@@ -83,6 +83,37 @@ func TestSalStore_GetAuthors(t *testing.T) {
 	assert.Nil(t, mock.ExpectationsWereMet())
 }
 
+func TestSalStore_SameName(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	client := NewStore(db)
+
+	req := SameNameReq{}
+
+	expResp := SameNameResp{
+		Bar: "val level 1",
+		Foo: Foo{
+			Bar: "val level 2",
+		},
+	}
+	var rows *sqlmock.Rows
+	{
+		rows = sqlmock.NewRows([]string{"Bar", "Bar"})
+		rows = rows.AddRow(expResp.Bar, expResp.Foo.Bar)
+	}
+
+	mock.ExpectPrepare(`SELECT.+`)
+	mock.ExpectQuery(`SELECT.+`).WithArgs().WillReturnRows(rows)
+
+	resp, err := client.SameName(context.Background(), req)
+	assert.Equal(t, &expResp, resp)
+	assert.Nil(t, err)
+	assert.Nil(t, mock.ExpectationsWereMet())
+}
+
 func TestSalStore_UpdateAuthor(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {

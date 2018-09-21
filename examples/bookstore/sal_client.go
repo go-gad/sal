@@ -267,6 +267,68 @@ func (s *SalStore) GetAuthors(ctx context.Context, req GetAuthorsReq) ([]*GetAut
 	return list, nil
 }
 
+func (s *SalStore) SameName(ctx context.Context, req SameNameReq) (*SameNameResp, error) {
+	var (
+		err      error
+		rawQuery = req.Query()
+		reqMap   = make(sal.RowMap)
+	)
+
+	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
+	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "QueryRow")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "SameName")
+
+	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
+
+	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	for _, fn := range s.ctrl.BeforeQuery {
+		var fnz sal.FinalizerFunc
+		ctx, fnz = fn(ctx, rawQuery, req)
+		if fnz != nil {
+			defer func() { fnz(ctx, err) }()
+		}
+	}
+
+	rows, err := stmt.QueryContext(ctx, args...)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to execute Query")
+	}
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to fetch columns")
+	}
+
+	if !rows.Next() {
+		if err = rows.Err(); err != nil {
+			return nil, errors.Wrap(err, "rows error")
+		}
+		return nil, sql.ErrNoRows
+	}
+
+	var resp SameNameResp
+	var respMap = make(sal.RowMap)
+	respMap.AppendTo("Bar", &resp.Bar)
+	respMap.AppendTo("Bar", &resp.Foo.Bar)
+
+	dest := sal.GetDests(cols, respMap)
+
+	if err = rows.Scan(dest...); err != nil {
+		return nil, errors.Wrap(err, "failed to scan row")
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, errors.Wrap(err, "something failed during iteration")
+	}
+
+	return &resp, nil
+}
+
 func (s *SalStore) UpdateAuthor(ctx context.Context, req *UpdateAuthorReq) error {
 	var (
 		err      error

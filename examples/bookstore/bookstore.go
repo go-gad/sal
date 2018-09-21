@@ -18,6 +18,7 @@ type Store interface {
 	CreateAuthorPtr(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)
 	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)
 	UpdateAuthor(context.Context, *UpdateAuthorReq) error
+	SameName(context.Context, SameNameReq) (*SameNameResp, error)
 }
 
 type BaseAuthor struct {
@@ -74,4 +75,19 @@ type UpdateAuthorReq struct {
 
 func (r *UpdateAuthorReq) Query() string {
 	return `UPDATE authors SET Name=@Name, Desc=@Desc WHERE ID=@ID`
+}
+
+type SameNameReq struct{}
+
+func (r SameNameReq) Query() string {
+	return `SELECT * FROM names LIMIT 1`
+}
+
+type SameNameResp struct {
+	Bar string
+	Foo
+}
+
+type Foo struct {
+	Bar string
 }

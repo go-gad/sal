@@ -47,3 +47,16 @@ func TestGenerateCode2(t *testing.T) {
 		}
 	}
 }
+
+func TestGenerator_GenerateRowMap(t *testing.T) {
+	prm := &looker.UnsupportedElement{
+		ImportPath: looker.ImportElement{},
+		UserType:   "int64",
+		BaseType:   "int64",
+		IsPointer:  true,
+	}
+	g := new(generator)
+	if err := g.GenerateRowMap(prm, "rowMap", "resp"); err == nil {
+		t.Error("should be error")
+	}
+}

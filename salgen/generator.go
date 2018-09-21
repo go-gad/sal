@@ -63,6 +63,7 @@ func (g *generator) GenerateInterface(dstPkg looker.ImportElement, intf *looker.
 	g.p("type %v struct {", implName)
 	g.p("%s", intf.Name(dstPkg.Path))
 	g.p("handler sal.QueryHandler")
+	g.p("parent sal.QueryHandler")
 	g.p("ctrl *sal.Controller")
 	g.p("txOpened bool")
 	g.p("}")
@@ -137,7 +138,7 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 
 	var errRespStr = responseErrStr(operation, resp, dstPkg.Path)
 
-	g.p("stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)")
+	g.p("stmt, err := s.ctrl.PrepareStmt(ctx, s.parent, s.handler, pgQuery)")
 	g.p("if err != nil {")
 	switch operation {
 	case sal.OperationTypeQuery, sal.OperationTypeQueryRow:
@@ -281,6 +282,7 @@ func (g *generator) GenerateBeginTx(dstPkg looker.ImportElement, intf *looker.In
 	g.br()
 	g.p("newClient := &%s{", intf.ImplementationName(dstPkg.Path, Prefix))
 	g.p("handler: tx,")
+	g.p("parent: s.handler,")
 	g.p("ctrl: s.ctrl,")
 	g.p("txOpened: true,")
 	g.p("}")

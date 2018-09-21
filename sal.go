@@ -323,7 +323,7 @@ func (ctrl *Controller) prepareStmt(ctx context.Context, qh QueryHandler, query 
 
 // PrepareStmt returns the prepared statements. If stmt is presented in cache then it will be returned.
 // if not, stmt will be prepared and put to cache.
-func (ctrl *Controller) PrepareStmt(ctx context.Context, qh QueryHandler, query string) (*sql.Stmt, error) {
+func (ctrl *Controller) PrepareStmt(ctx context.Context, parent QueryHandler, qh QueryHandler, query string) (*sql.Stmt, error) {
 	var (
 		err  error
 		stmt *sql.Stmt
@@ -345,9 +345,18 @@ func (ctrl *Controller) PrepareStmt(ctx context.Context, qh QueryHandler, query 
 			return nil, errors.New("failed to get transaction handler")
 		}
 		if stmt == nil {
-			stmt, err = ctrl.prepareStmt(ctx, txh, query)
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to prepare stmt with tx on query %q", query)
+			if parent != nil {
+				stmt, err = ctrl.prepareStmt(ctx, parent, query)
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed to prepare stmt with conn on query %q", query)
+				}
+				ctrl.putStmt(query, stmt)
+				stmt = txh.StmtContext(ctx, stmt)
+			} else {
+				stmt, err = ctrl.prepareStmt(ctx, txh, query)
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed to prepare stmt with tx on query %q", query)
+				}
 			}
 		} else {
 			stmt = txh.StmtContext(ctx, stmt)

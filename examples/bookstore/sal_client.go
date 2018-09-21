@@ -4,6 +4,7 @@ package bookstore
 import (
 	"context"
 	"database/sql"
+
 	"github.com/go-gad/sal"
 	"github.com/pkg/errors"
 )
@@ -11,6 +12,7 @@ import (
 type SalStore struct {
 	Store
 	handler  sal.QueryHandler
+	parent   sal.QueryHandler
 	ctrl     *sal.Controller
 	txOpened bool
 }
@@ -55,6 +57,7 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, err
 
 	newClient := &SalStore{
 		handler:  tx,
+		parent:   s.handler,
 		ctrl:     s.ctrl,
 		txOpened: true,
 	}
@@ -84,7 +87,7 @@ func (s *SalStore) CreateAuthor(ctx context.Context, req CreateAuthorReq) (Creat
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
-	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	stmt, err := s.ctrl.PrepareStmt(ctx, s.parent, s.handler, pgQuery)
 	if err != nil {
 		return CreateAuthorResp{}, errors.WithStack(err)
 	}
@@ -148,7 +151,7 @@ func (s *SalStore) CreateAuthorPtr(ctx context.Context, req CreateAuthorReq) (*C
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
-	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	stmt, err := s.ctrl.PrepareStmt(ctx, s.parent, s.handler, pgQuery)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -214,7 +217,7 @@ func (s *SalStore) GetAuthors(ctx context.Context, req GetAuthorsReq) ([]*GetAut
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
-	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	stmt, err := s.ctrl.PrepareStmt(ctx, s.parent, s.handler, pgQuery)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -280,7 +283,7 @@ func (s *SalStore) SameName(ctx context.Context, req SameNameReq) (*SameNameResp
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
-	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	stmt, err := s.ctrl.PrepareStmt(ctx, s.parent, s.handler, pgQuery)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -345,7 +348,7 @@ func (s *SalStore) UpdateAuthor(ctx context.Context, req *UpdateAuthorReq) error
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
-	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	stmt, err := s.ctrl.PrepareStmt(ctx, s.parent, s.handler, pgQuery)
 	if err != nil {
 		return errors.WithStack(err)
 	}

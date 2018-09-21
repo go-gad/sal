@@ -99,7 +99,7 @@ func GetDests(cols []string, respMap RowMap) []interface{} {
 //		}
 //
 //		func (r GetAuthorsReq) ProcessRow(rowMap sal.RowMap) {
-//			rowMap["tags"] = pq.Array(r.Tags)
+//			rowMap.Set("tags", pq.Array(r.Tags))
 //		}
 // As an argument method receives the RowMap object.
 type ProcessRower interface {

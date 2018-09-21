@@ -4,6 +4,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+
 	"github.com/go-gad/sal"
 	"github.com/pkg/errors"
 )
@@ -81,7 +82,7 @@ func (s *SalStore) AllUsers(ctx context.Context, req AllUsersReq) ([]*AllUsersRe
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
-	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	stmt, err := s.ctrl.PrepareStmt(ctx, nil, s.handler, pgQuery)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -146,7 +147,7 @@ func (s *SalStore) CreateUser(ctx context.Context, req CreateUserReq) (*CreateUs
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
-	stmt, err := s.ctrl.PrepareStmt(ctx, s.handler, pgQuery)
+	stmt, err := s.ctrl.PrepareStmt(ctx, nil, s.handler, pgQuery)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

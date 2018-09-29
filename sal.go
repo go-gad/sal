@@ -134,14 +134,26 @@ type Transaction interface {
 	Rollback(ctx context.Context) error
 }
 
+type SqlTx interface {
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
+	StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
+	Commit() error
+	Rollback() error
+}
+
 // WrappedTx is a struct that is an implementation of Transaction interface.
 type WrappedTx struct {
-	Tx   *sql.Tx
+	Tx   SqlTx
 	ctrl *Controller
 }
 
 // NewWrappedTx returns the WrappedTx object.
-func NewWrappedTx(tx *sql.Tx, ctrl *Controller) *WrappedTx {
+func NewWrappedTx(tx SqlTx, ctrl *Controller) *WrappedTx {
+	if ctrl == nil {
+		ctrl = NewController()
+	}
 	return &WrappedTx{Tx: tx, ctrl: ctrl}
 }
 

@@ -341,9 +341,9 @@
                     Fields:     {
                         {
                             Name:       "Tx",
-                            ImportPath: looker.ImportElement{},
-                            BaseType:   "ptr",
-                            UserType:   "",
+                            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal", Alias:""},
+                            BaseType:   "interface",
+                            UserType:   "SqlTx",
                             Anonymous:  false,
                             Tag:        "",
                             Parents:    {},

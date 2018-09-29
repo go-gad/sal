@@ -151,6 +151,9 @@ type WrappedTx struct {
 
 // NewWrappedTx returns the WrappedTx object.
 func NewWrappedTx(tx SqlTx, ctrl *Controller) *WrappedTx {
+	if ctrl == nil {
+		ctrl = NewController()
+	}
 	return &WrappedTx{Tx: tx, ctrl: ctrl}
 }
 

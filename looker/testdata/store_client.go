@@ -66,7 +66,7 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, err
 }
 
 func (s *SalStore) Tx() *sal.WrappedTx {
-	if tx, ok := s.handler.(*sql.Tx); ok {
+	if tx, ok := s.handler.(sal.SqlTx); ok {
 		return sal.NewWrappedTx(tx, s.ctrl)
 	}
 	return nil

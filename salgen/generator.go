@@ -293,7 +293,7 @@ func (g *generator) GenerateBeginTx(dstPkg looker.ImportElement, intf *looker.In
 
 func (g *generator) GenerateTx(dstPkg looker.ImportElement, intf *looker.Interface) {
 	g.p("func (s *%s) Tx() *sal.WrappedTx {", intf.ImplementationName(dstPkg.Path, Prefix))
-	g.p("if tx, ok := s.handler.(*sql.Tx); ok {")
+	g.p("if tx, ok := s.handler.(sal.SqlTx); ok {")
 	g.p("return sal.NewWrappedTx(tx, s.ctrl)")
 	g.p("}")
 	g.p("return nil")

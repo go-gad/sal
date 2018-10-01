@@ -334,31 +334,9 @@
             In:   {
             },
             Out: {
-                &looker.StructElement{
+                &looker.InterfaceElement{
                     ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal", Alias:""},
-                    UserType:   "WrappedTx",
-                    IsPointer:  true,
-                    Fields:     {
-                        {
-                            Name:       "Tx",
-                            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal", Alias:""},
-                            BaseType:   "interface",
-                            UserType:   "SqlTx",
-                            Anonymous:  false,
-                            Tag:        "",
-                            Parents:    {},
-                        },
-                        {
-                            Name:       "ctrl",
-                            ImportPath: looker.ImportElement{},
-                            BaseType:   "ptr",
-                            UserType:   "",
-                            Anonymous:  false,
-                            Tag:        "",
-                            Parents:    {},
-                        },
-                    },
-                    ProcessRower: false,
+                    UserType:   "Transaction",
                 },
             },
         },

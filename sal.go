@@ -121,7 +121,16 @@ type TransactionBegin interface {
 
 // Txer describes the method to return implementation of Transaction interface.
 type Txer interface {
-	Tx() *WrappedTx
+	Tx() Transaction
+}
+
+type SqlTx interface {
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
+	StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
+	Commit() error
+	Rollback() error
 }
 
 // Transaction is an interface that describes the method to work with transaction object.
@@ -132,15 +141,6 @@ type Transaction interface {
 	StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error
-}
-
-type SqlTx interface {
-	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
-	StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
-	Commit() error
-	Rollback() error
 }
 
 // WrappedTx is a struct that is an implementation of Transaction interface.

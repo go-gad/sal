@@ -12,7 +12,7 @@ import (
 
 var (
 	destination = flag.String("destination", "", "Output file; defaults to stdout.")
-	packageName = flag.String("package", "", "Package of the generated code.")
+	packageName = flag.String("package", "", "The full import path of the library for the generated implementation")
 )
 
 func main() {

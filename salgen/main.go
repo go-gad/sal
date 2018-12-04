@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -16,6 +17,7 @@ var (
 )
 
 func main() {
+	flag.Usage = usage
 	flag.Parse()
 
 	if flag.NArg() != 2 {
@@ -69,3 +71,22 @@ func GenerateCode(dstPkg looker.ImportElement, srcpkg string, symbols []string) 
 
 	return g.Output(), nil
 }
+
+func usage() {
+	io.WriteString(os.Stderr, usageText)
+	flag.PrintDefaults()
+}
+
+const usageText = `Usage:
+    salgen [options...] <import_path> <interface_name>
+
+Example:
+    salgen -destination=./client.go -package=github.com/go-gad/sal/examples/profile/storage github.com/go-gad/sal/examples/profile/storage Store
+
+  <import_path> 
+        describes the complete package path where the interface is located.
+  <interface_name> 
+        indicates the interface name itself.
+
+Options:
+`

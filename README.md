@@ -9,7 +9,29 @@ go get -u github.com/go-gad/sal/...
 ```
 
 ## Usage
+```sh
+ salgen -h
+Usage:
+    salgen [options...] <import_path> <interface_name>
 
+Example:
+    salgen -destination=./client.go -package=github.com/go-gad/sal/examples/profile/storage github.com/go-gad/sal/examples/profile/storage Store
+
+  <import_path>
+        describes the complete package path where the interface is located.
+  <interface_name>
+        indicates the interface name itself.
+
+Options:
+  -build_flags string
+        Additional flags for go build.
+  -destination string
+        Output file; defaults to stdout.
+  -package string
+        The full import path of the library for the generated implementation
+```
+
+With go generate:
 ```go
 //go:generate salgen -destination=./client.go -package=github.com/go-gad/sal/examples/profile/storage github.com/go-gad/sal/examples/profile/storage Store
 type Store interface {
@@ -23,6 +45,11 @@ type CreateUserReq struct {
 
 func (r CreateUserReq) Query() string {
 	return `INSERT INTO users(name, email, created_at) VALUES(@name, @email, now()) RETURNING id, created_at`
+}
+
+type CreateUserResp struct {
+	ID        int64     `sql:"id"`
+	CreatedAt time.Time `sql:"created_at"`
 }
 ```
 
@@ -181,5 +208,3 @@ As arguments, the `BeforeQueryFunc` hook takes the sql string of the query and t
 ## Limitations
 
 Currently support only PostgreSQL.
-
-

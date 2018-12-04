@@ -109,7 +109,7 @@ Then the `GetRubricsResp` list will return to us,
 elements of which will be pointers to `Rubric`,
 where the fields are filled with values from the columns that correspond to the names of the tags.
 
-#### Non-standard data types
+## Non-standard data types
 
 The `database/sql` package provides support for basic data types (strings, numbers).
 In order to handle data types such as an `array` or `json` in a request or response.

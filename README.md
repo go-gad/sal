@@ -9,6 +9,9 @@ go get -u github.com/go-gad/sal/...
 ```
 
 ## Usage
+
+Read article https://medium.com/@zaurio/generator-the-client-to-sql-database-on-golang-dccfeb4641c3
+
 ```sh
  salgen -h
 Usage:

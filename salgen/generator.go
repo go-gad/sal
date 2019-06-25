@@ -41,7 +41,7 @@ func (g *generator) Generate(pkg *looker.Package, dstPkg looker.ImportElement) e
 			return err
 		}
 		g.p("// compile time checks")
-		g.p("var _ %s = &%s{}", intf.Name(dstPkg.Path), intf.ImplementationName(dstPkg.Path, Prefix))
+		g.p("var _ %s = &%s{}", intf.Name(dstPkg.Path), intf.ImplementationName(Prefix))
 	}
 
 	return nil
@@ -59,7 +59,7 @@ func (g *generator) GenerateImportPaths(paths []string) {
 }
 
 func (g *generator) GenerateInterface(dstPkg looker.ImportElement, intf *looker.Interface) error {
-	implName := intf.ImplementationName(dstPkg.Path, Prefix)
+	implName := intf.ImplementationName(Prefix)
 	g.p("type %v struct {", implName)
 	g.p("%s", intf.Name(dstPkg.Path))
 	g.p("handler sal.QueryHandler")
@@ -255,7 +255,7 @@ func (g *generator) GenerateRowMap(prm looker.Parameter, mapName string, prmName
 }
 
 func (g *generator) GenerateBeginTx(dstPkg looker.ImportElement, intf *looker.Interface) {
-	g.p("func (s *%s) BeginTx(ctx context.Context, opts *sql.TxOptions) (%s, error) {", intf.ImplementationName(dstPkg.Path, Prefix), intf.Name(dstPkg.Path))
+	g.p("func (s *%s) BeginTx(ctx context.Context, opts *sql.TxOptions) (%s, error) {", intf.ImplementationName(Prefix), intf.Name(dstPkg.Path))
 	g.p("dbConn, ok := s.handler.(sal.TransactionBegin)")
 	g.p("if !ok {")
 	g.p("return nil, errors.New(%q)", "handler doesn't satisfy the interface TransactionBegin")
@@ -280,7 +280,7 @@ func (g *generator) GenerateBeginTx(dstPkg looker.ImportElement, intf *looker.In
 	g.p("return nil, err")
 	g.p("}")
 	g.br()
-	g.p("newClient := &%s{", intf.ImplementationName(dstPkg.Path, Prefix))
+	g.p("newClient := &%s{", intf.ImplementationName(Prefix))
 	g.p("handler: tx,")
 	g.p("parent: s.handler,")
 	g.p("ctrl: s.ctrl,")
@@ -292,7 +292,7 @@ func (g *generator) GenerateBeginTx(dstPkg looker.ImportElement, intf *looker.In
 }
 
 func (g *generator) GenerateTx(dstPkg looker.ImportElement, intf *looker.Interface) {
-	g.p("func (s *%s) Tx() sal.Transaction {", intf.ImplementationName(dstPkg.Path, Prefix))
+	g.p("func (s *%s) Tx() sal.Transaction {", intf.ImplementationName(Prefix))
 	g.p("if tx, ok := s.handler.(sal.SqlTx); ok {")
 	g.p("return sal.NewWrappedTx(tx, s.ctrl)")
 	g.p("}")

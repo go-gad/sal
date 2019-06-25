@@ -1,4 +1,4 @@
-# sal [![Build Status](https://travis-ci.org/go-gad/sal.svg?branch=master)](https://travis-ci.org/go-gad/sal)
+# sal [![Build Status](https://travis-ci.org/go-gad/sal.svg?branch=master)](https://travis-ci.org/go-gad/sal) [![GoDoc](https://godoc.org/github.com/go-gad/sal?status.svg)](https://godoc.org/github.com/go-gad/sal)
 
 Generator client to the database on the Golang based on interface.
 

@@ -70,11 +70,8 @@ func (intf *Interface) Name(dstPath string) string {
 	return intf.ImportPath.Name() + "." + intf.UserType
 }
 
-func (intf *Interface) ImplementationName(dstPath string, prefix string) string {
-	if dstPath == intf.ImportPath.Path {
-		return prefix + intf.UserType
-	}
-	return intf.ImportPath.Name() + "." + prefix + intf.UserType
+func (intf *Interface) ImplementationName(prefix string) string {
+	return prefix + intf.UserType
 }
 
 func (intf *Interface) ImportPaths() []string {

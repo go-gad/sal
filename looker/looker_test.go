@@ -1,6 +1,8 @@
 package looker_test
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"io/ioutil"
 	"reflect"
@@ -68,8 +70,6 @@ func TestLookAtInterface(t *testing.T) {
 }
 
 func TestLookAtParameter(t *testing.T) {
-	ftyp := reflect.TypeOf(testdata.Foo)
-
 	for _, tc := range []struct {
 		test string
 		typ  reflect.Type
@@ -113,7 +113,7 @@ func TestLookAtParameter(t *testing.T) {
 			ptr:  false,
 		}, {
 			test: "context",
-			typ:  ftyp.In(0),
+			typ:  reflect.TypeOf((*context.Context)(nil)).Elem(),
 			prm: &looker.InterfaceElement{
 				ImportPath: looker.ImportElement{Path: "context"},
 				UserType:   "Context",
@@ -123,7 +123,7 @@ func TestLookAtParameter(t *testing.T) {
 			ptr:  false,
 		}, {
 			test: "error",
-			typ:  ftyp.Out(0),
+			typ:  reflect.TypeOf((*error)(nil)).Elem(),
 			prm: &looker.InterfaceElement{
 				ImportPath: looker.ImportElement{Path: ""},
 				UserType:   "error",
@@ -159,6 +159,13 @@ func TestLookAtParameter(t *testing.T) {
 			kind: reflect.Slice.String(),
 			name: "foo.List",
 			ptr:  false,
+		}, {
+			test: "result",
+			typ:  reflect.TypeOf((*sql.Result)(nil)).Elem(),
+			prm:  &looker.InterfaceElement{},
+			kind: reflect.Interface.String(),
+			name: "sql.Result",
+			ptr:  false,
 		},
 	} {
 		t.Run(tc.test, func(t *testing.T) {
@@ -168,7 +175,7 @@ func TestLookAtParameter(t *testing.T) {
 			assert.Equal(tc.kind, prm.Kind())
 			assert.Equal(tc.name, prm.Name(dstPkg.Path))
 			assert.Equal(tc.ptr, prm.Pointer())
-			//t.Logf("struct element %# v", pretty.Formatter(prm))
+			//t.Logf("element %# v", pretty.Formatter(prm))
 		})
 	}
 }

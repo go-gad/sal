@@ -381,7 +381,7 @@ func (s *SalStore) UpdateAuthorResult(ctx context.Context, req *UpdateAuthorReq)
 
 	ctx = context.WithValue(ctx, sal.ContextKeyTxOpened, s.txOpened)
 	ctx = context.WithValue(ctx, sal.ContextKeyOperationType, "Exec")
-	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "UpdateAuthor")
+	ctx = context.WithValue(ctx, sal.ContextKeyMethodName, "UpdateAuthorResult")
 
 	pgQuery, args := sal.ProcessQueryAndArgs(rawQuery, reqMap)
 
@@ -397,8 +397,8 @@ func (s *SalStore) UpdateAuthorResult(ctx context.Context, req *UpdateAuthorReq)
 			defer func() { fnz(ctx, err) }()
 		}
 	}
-	var res sql.Result
-	res, err = stmt.ExecContext(ctx, args...)
+
+	res, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to execute Exec")
 	}

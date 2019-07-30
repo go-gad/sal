@@ -115,7 +115,11 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	outArgs := make(prmArgs, 0, 2)
 
 	resp := mtd.Out[0]
-	if operation != sal.OperationTypeExec {
+	if operation == sal.OperationTypeExec {
+		if isSqlResult(resp) {
+			outArgs = append(outArgs, elementType(resp.Pointer(), resp.Name(dstPkg.Path)))
+		}
+	} else {
 		outArgs = append(outArgs, elementType(resp.Pointer(), resp.Name(dstPkg.Path)))
 	}
 	outArgs = append(outArgs, mtd.Out[len(mtd.Out)-1].Name(dstPkg.Path))
@@ -144,7 +148,11 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 	case sal.OperationTypeQuery, sal.OperationTypeQueryRow:
 		g.p("return %s, errors.WithStack(err)", errRespStr)
 	case sal.OperationTypeExec:
-		g.p("return errors.WithStack(err)")
+		if isSqlResult(mtd.Out[0]) {
+			g.p("return nil, errors.WithStack(err)")
+		} else {
+			g.p("return errors.WithStack(err)")
+		}
 	}
 	g.p("}")
 	g.br()
@@ -163,13 +171,23 @@ func (g *generator) GenerateMethod(dstPkg looker.ImportElement, implName string,
 		g.ifErr(errRespStr, "failed to fetch columns")
 		g.br()
 	case sal.OperationTypeExec:
-		g.p("_, err = stmt.ExecContext(ctx, args...)")
-		g.ifErr("", "failed to execute Exec")
+		if isSqlResult(mtd.Out[0]) {
+			g.p("res, err := stmt.ExecContext(ctx, args...)")
+			g.ifErr("nil", "failed to execute Exec")
+		} else {
+			g.p("_, err = stmt.ExecContext(ctx, args...)")
+			g.ifErr("", "failed to execute Exec")
+		}
+
 		g.br()
 	}
 
 	if operation == sal.OperationTypeExec {
-		g.p("return nil")
+		if isSqlResult(mtd.Out[0]) {
+			g.p("return res, nil")
+		} else {
+			g.p("return nil")
+		}
 		g.p("}")
 		return nil
 	}
@@ -349,6 +367,9 @@ func calcOperationType(prms looker.Parameters) sal.OperationType {
 	if len(prms) == 1 {
 		return sal.OperationTypeExec
 	}
+	if isSqlResult(prms[0]) {
+		return sal.OperationTypeExec
+	}
 	if prms[0].Kind() == reflect.Slice.String() {
 		return sal.OperationTypeQuery
 	}
@@ -385,4 +406,11 @@ func responseErrStr(operation sal.OperationType, resp looker.Parameter, dstPath 
 	}
 
 	return errRespStr
+}
+
+func isSqlResult(prm looker.Parameter) bool {
+	if prm.Name("path/to/pkg") == "sql.Result" {
+		return true
+	}
+	return false
 }

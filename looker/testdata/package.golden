@@ -393,6 +393,60 @@
                         },
                     },
                 },
+                &looker.Method{
+                    Name: "UpdateAuthorResult",
+                    In:   {
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{Path:"context", Alias:""},
+                            UserType:   "Context",
+                        },
+                        &looker.StructElement{
+                            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+                            UserType:   "UpdateAuthorReq",
+                            IsPointer:  true,
+                            Fields:     {
+                                {
+                                    Name:       "ID",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "int64",
+                                    UserType:   "int64",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                    Parents:    {},
+                                },
+                                {
+                                    Name:       "Name",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "string",
+                                    UserType:   "string",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                    Parents:    {"BaseAuthor"},
+                                },
+                                {
+                                    Name:       "Desc",
+                                    ImportPath: looker.ImportElement{},
+                                    BaseType:   "string",
+                                    UserType:   "string",
+                                    Anonymous:  false,
+                                    Tag:        "",
+                                    Parents:    {"BaseAuthor"},
+                                },
+                            },
+                            ProcessRower: false,
+                        },
+                    },
+                    Out: {
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{Path:"database/sql", Alias:""},
+                            UserType:   "Result",
+                        },
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{},
+                            UserType:   "error",
+                        },
+                    },
+                },
             },
         },
     },

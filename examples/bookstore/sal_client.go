@@ -4,7 +4,6 @@ package bookstore
 import (
 	"context"
 	"database/sql"
-
 	"github.com/go-gad/sal"
 	"github.com/pkg/errors"
 )

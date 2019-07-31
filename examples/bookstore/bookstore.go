@@ -18,6 +18,7 @@ type Store interface {
 	CreateAuthorPtr(context.Context, CreateAuthorReq) (*CreateAuthorResp, error)
 	GetAuthors(context.Context, GetAuthorsReq) ([]*GetAuthorsResp, error)
 	UpdateAuthor(context.Context, *UpdateAuthorReq) error
+	UpdateAuthorResult(context.Context, *UpdateAuthorReq) (sql.Result, error)
 	SameName(context.Context, SameNameReq) (*SameNameResp, error)
 }
 

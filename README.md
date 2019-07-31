@@ -76,13 +76,14 @@ type Store interface {
 	CreateAuthor(ctx context.Context, req CreateAuthorReq) (CreateAuthorResp, error)
 	GetAuthors(ctx context.Context, req GetAuthorsReq) ([]*GetAuthorsResp, error)
 	UpdateAuthor(ctx context.Context, req *UpdateAuthorReq) error
+	DeleteAuthors(ctx context.Context, req *DeleteAuthorsReq) (sql.Result, error)
 }
 ```
 
 * The number of arguments is always strictly two.
 * The first argument is the context.
 * The second argument contains the data to bind the variables and defines the query string.
-* The first output parameter can be an object, an array of objects or missing.
+* The first output parameter can be an object, an array of objects, `sql.Result` or missing.
 * Last output parameter is always an error.
 
 The second argument expects a parameter with a base type of  `struct` (or a pointer to a `struct`). The parameter must satisfy the following interface:

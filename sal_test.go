@@ -47,13 +47,12 @@ func TestMapIndex_NextVal(t *testing.T) {
 func TestRowMap(t *testing.T) {
 	assert := assert.New(t)
 	rm := make(RowMap)
-	var n skippedField
-	assert.Equal(&n, rm.Get("foo"))
-	assert.Equal(&n, rm.GetByIndex("foo", 0))
+	assert.Nil(rm.Get("foo"))
+	assert.Nil(rm.GetByIndex("foo", 0))
 	rm.AppendTo("foo", 777)
 	assert.Equal(777, rm.Get("foo"))
 	assert.Equal(777, rm.GetByIndex("foo", 0))
-	assert.Equal(&n, rm.GetByIndex("foo", 1))
+	assert.Nil(rm.GetByIndex("foo", 1))
 }
 
 func TestGetDests(t *testing.T) {

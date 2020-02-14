@@ -36,8 +36,7 @@ func (rm RowMap) AppendTo(key string, val interface{}) {
 func (rm RowMap) Get(key string) interface{} {
 	v := rm[key]
 	if len(v) == 0 {
-		var n skippedField
-		return &n
+		return nil
 	}
 	return v[0]
 }
@@ -49,13 +48,10 @@ func (rm RowMap) Set(key string, val interface{}) {
 	rm[key] = []interface{}{val}
 }
 
-type skippedField interface{}
-
 func (rm RowMap) GetByIndex(key string, index int) interface{} {
 	v := rm[key]
 	if len(v) == 0 || len(v) < index+1 {
-		var n skippedField
-		return &n
+		return nil
 	}
 	return v[index]
 }
@@ -82,14 +78,20 @@ func ProcessQueryAndArgs(query string, reqMap RowMap) (string, []interface{}) {
 	return pgQuery, args
 }
 
+type skippedField interface{}
+
 func GetDests(cols []string, respMap RowMap) []interface{} {
 	var (
 		ind  = make(mapIndex)
 		dest = make([]interface{}, 0, len(cols))
 	)
-
+	var n skippedField
 	for _, v := range cols {
-		dest = append(dest, respMap.GetByIndex(v, ind.NextVal(v)))
+		d := respMap.GetByIndex(v, ind.NextVal(v))
+		if d == nil {
+			d = &n
+		}
+		dest = append(dest, d)
 	}
 
 	return dest

@@ -140,6 +140,8 @@ Then the `GetRubricsResp` list will return to us,
 elements of which will be pointers to `Rubric`,
 where the fields are filled with values from the columns that correspond to the names of the tags.
 
+Unmapped columns will be skipped if database response contains more fields than defined in the structure.
+
 ## Non-standard data types
 
 The `database/sql` package provides support for basic data types (strings, numbers).

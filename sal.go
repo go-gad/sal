@@ -36,7 +36,8 @@ func (rm RowMap) AppendTo(key string, val interface{}) {
 func (rm RowMap) Get(key string) interface{} {
 	v := rm[key]
 	if len(v) == 0 {
-		return nil
+		var n skippedField
+		return &n
 	}
 	return v[0]
 }
@@ -48,10 +49,13 @@ func (rm RowMap) Set(key string, val interface{}) {
 	rm[key] = []interface{}{val}
 }
 
+type skippedField interface{}
+
 func (rm RowMap) GetByIndex(key string, index int) interface{} {
 	v := rm[key]
 	if len(v) == 0 || len(v) < index+1 {
-		return nil
+		var n skippedField
+		return &n
 	}
 	return v[index]
 }

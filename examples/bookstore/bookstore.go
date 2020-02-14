@@ -20,6 +20,7 @@ type Store interface {
 	UpdateAuthor(context.Context, *UpdateAuthorReq) error
 	UpdateAuthorResult(context.Context, *UpdateAuthorReq) (sql.Result, error)
 	SameName(context.Context, SameNameReq) (*SameNameResp, error)
+	GetBooks(context.Context, GetBooksReq) ([]*GetBooksResp, error)
 }
 
 type BaseAuthor struct {

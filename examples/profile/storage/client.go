@@ -64,8 +64,8 @@ func (s *SalStore) BeginTx(ctx context.Context, opts *sql.TxOptions) (Store, err
 	return newClient, nil
 }
 
-func (s *SalStore) Tx() *sal.WrappedTx {
-	if tx, ok := s.handler.(*sql.Tx); ok {
+func (s *SalStore) Tx() sal.Transaction {
+	if tx, ok := s.handler.(sal.SqlTx); ok {
 		return sal.NewWrappedTx(tx, s.ctrl)
 	}
 	return nil

@@ -185,3 +185,33 @@ func TestNewStoreController(t *testing.T) {
 	assert.Nil(t, mock.ExpectationsWereMet())
 
 }
+
+func TestSalStore_GetBooks(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	client := NewStore(db)
+
+	req := GetBooksReq{}
+	// time.Now().Truncate(time.Millisecond)
+	expResp := []*GetBooksResp{
+		&GetBooksResp{ID: 10, Title: "foo-10"},
+		&GetBooksResp{ID: 20, Title: "foo-20"},
+		&GetBooksResp{ID: 30, Title: "foo-30"},
+	}
+	//Scan(&id, nil, &title, nil)
+	rows := sqlmock.NewRows([]string{"id", "created_at", "title", "desc"})
+	for _, v := range expResp {
+		rows = rows.AddRow(v.ID, time.Now().Truncate(time.Millisecond), v.Title, "trash")
+	}
+
+	mock.ExpectPrepare(`SELECT \* FROM books`)
+	mock.ExpectQuery(`SELECT \* FROM books`).WillReturnRows(rows)
+
+	resp, err := client.GetBooks(context.Background(), req)
+	assert.Equal(t, expResp, resp)
+	assert.Nil(t, err)
+	assert.Nil(t, mock.ExpectationsWereMet())
+}

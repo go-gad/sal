@@ -55,6 +55,17 @@ func TestRowMap(t *testing.T) {
 	assert.Equal(nil, rm.GetByIndex("foo", 1))
 }
 
+func TestGetDests(t *testing.T) {
+	assert := assert.New(t)
+	rm := make(RowMap)
+	rm.AppendTo("id", 111)
+	rm.AppendTo("title", "foobar")
+	cols := []string{"id", "created_at", "title", "desc"}
+	dest := GetDests(cols, rm)
+	expt := []interface{}{111, nil, "foobar", nil}
+	assert.Equal(expt, dest)
+}
+
 func TestController_PrepareStmt(t *testing.T) {
 	assert := assert.New(t)
 	db, mock, err := sqlmock.New()

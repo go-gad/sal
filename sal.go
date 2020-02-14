@@ -81,7 +81,7 @@ func ProcessQueryAndArgs(query string, reqMap RowMap) (string, []interface{}) {
 func GetDests(cols []string, respMap RowMap) []interface{} {
 	var (
 		ind  = make(mapIndex)
-		dest = make([]interface{}, 0, len(respMap))
+		dest = make([]interface{}, 0, len(cols))
 	)
 
 	for _, v := range cols {

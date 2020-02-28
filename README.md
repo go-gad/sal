@@ -201,7 +201,7 @@ func (r *DeleteAuthorsReq) Query() string {
 
 ```go
 type Author struct {
-    ID   int64  `dql:"id"` 
+    ID   int64  `sql:"id"` 
     Name string `sql:"name"`
 }
 

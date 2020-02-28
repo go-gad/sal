@@ -199,16 +199,17 @@ func (r *DeleteAuthorsReq) Query() string {
 
 ##  Nested types
 
+Here we don't use struct tages because we map it in ProcessRow func to prevent misunderstanding for the same field names (`id` and `name` for `Book` and `Author` types)
 ```go
 type Author struct {
-    ID   int64  `sql:"id"` 
-    Name string `sql:"name"`
+    ID   int64 
+    Name string
 }
 
 type Book struct {
-    ID   int64  `sql:id`
-    Name string `sql:"name"`
-    Desc string `sql:"description"`
+    ID   int64
+    Name string
+    Description string
     Author Author
 }
 type CreateBookReq struct {
@@ -219,12 +220,12 @@ func (r *CreateBookReq) ProcessRow(rowMap sal.RowMap) {
 	rowMap.Set("author_id", r.Book.Author.ID)
 	rowMap.Set("book_id",   r.Book.ID)
 	rowMap.Set("book_name", r.Book.Name)
-	rowMap.Set("book_desc", r.Book.Desc)
+	rowMap.Set("book_descriprion", r.Book.Description)
 }
 
 func (r *CreateBookReq) Query() string {
 	return `INSERT INTO books (id, author_id, name, description)
-	VALUES (@book_id, @author_id, @book_name, @book_desc)`
+	VALUES (@book_id, @author_id, @book_name, @book_description)`
 }
 ```
 

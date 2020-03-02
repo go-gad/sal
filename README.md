@@ -140,6 +140,32 @@ Then the `GetRubricsResp` list will return to us,
 elements of which will be pointers to `Rubric`,
 where the fields are filled with values from the columns that correspond to the names of the tags.
 
+## Value `in` list
+
+```go
+type GetIDsReq struct {
+	IDs  pq.StringArray `sql:"ids"`
+}
+
+func (r *GetIDsReq) Query() string {
+	return `SELECT * FROM rubrics WHERE id = ANY(@ids)`
+}
+```
+
+## Multiple insert/update
+
+```go
+type AddBooksToShelfReq struct {
+	ShelfID     int64 `sql:"shelf_id"`
+	BookID      pq.Int64Array `sql:"book_ids"`
+}
+
+func (c *AddBooksToShelfReq) Query() string {
+	return `INSERT INTO shelf (shelf_id, book_id)
+		SELECT @shelf_id, unnest(@book_ids);`
+}
+```
+
 ## Non-standard data types
 
 The `database/sql` package provides support for basic data types (strings, numbers).
@@ -156,6 +182,50 @@ func (r *DeleteAuthorsReq) ProcessRow(rowMap sal.RowMap) {
 
 func (r *DeleteAuthorsReq) Query() string {
 	return `DELETE FROM authors WHERE tags=ANY(@tags::UUID[])`
+}
+```
+
+The same can be done with `sql` package predefined types
+
+```go
+type DeleteAuthrosReq struct {
+	Tags sql.Int64Array `sql:"tags"`
+}
+
+func (r *DeleteAuthorsReq) Query() string {
+	return `DELETE FROM authors WHERE tags=ANY(@tags::UUID[])`
+}
+```
+
+##  Nested types
+
+Here we don't use struct tages because we map it in ProcessRow func to prevent misunderstanding for the same field names (`id` and `name` for `Book` and `Author` types)
+```go
+type Author struct {
+    ID   int64 
+    Name string
+}
+
+type Book struct {
+    ID   int64
+    Name string
+    Description string
+    Author Author
+}
+type CreateBookReq struct {
+    Book Book
+}
+
+func (r *CreateBookReq) ProcessRow(rowMap sal.RowMap) {
+	rowMap.Set("author_id", r.Book.Author.ID)
+	rowMap.Set("book_id",   r.Book.ID)
+	rowMap.Set("book_name", r.Book.Name)
+	rowMap.Set("book_descriprion", r.Book.Description)
+}
+
+func (r *CreateBookReq) Query() string {
+	return `INSERT INTO books (id, author_id, name, description)
+	VALUES (@book_id, @author_id, @book_name, @book_description)`
 }
 ```
 

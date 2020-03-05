@@ -78,14 +78,20 @@ func ProcessQueryAndArgs(query string, reqMap RowMap) (string, []interface{}) {
 	return pgQuery, args
 }
 
+type skippedField interface{}
+
 func GetDests(cols []string, respMap RowMap) []interface{} {
 	var (
 		ind  = make(mapIndex)
-		dest = make([]interface{}, 0, len(respMap))
+		dest = make([]interface{}, 0, len(cols))
 	)
-
+	var n skippedField
 	for _, v := range cols {
-		dest = append(dest, respMap.GetByIndex(v, ind.NextVal(v)))
+		d := respMap.GetByIndex(v, ind.NextVal(v))
+		if d == nil {
+			d = &n
+		}
+		dest = append(dest, d)
 	}
 
 	return dest

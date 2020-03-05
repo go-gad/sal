@@ -52,7 +52,19 @@ func TestRowMap(t *testing.T) {
 	rm.AppendTo("foo", 777)
 	assert.Equal(777, rm.Get("foo"))
 	assert.Equal(777, rm.GetByIndex("foo", 0))
-	assert.Equal(nil, rm.GetByIndex("foo", 1))
+	assert.Nil(rm.GetByIndex("foo", 1))
+}
+
+func TestGetDests(t *testing.T) {
+	assert := assert.New(t)
+	rm := make(RowMap)
+	rm.AppendTo("id", 111)
+	rm.AppendTo("title", "foobar")
+	cols := []string{"id", "created_at", "title", "desc"}
+	dest := GetDests(cols, rm)
+	var n skippedField
+	expt := []interface{}{111, &n, "foobar", &n}
+	assert.Equal(expt, dest)
 }
 
 func TestController_PrepareStmt(t *testing.T) {

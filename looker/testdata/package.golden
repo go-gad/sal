@@ -284,6 +284,60 @@
                     },
                 },
                 &looker.Method{
+                    Name: "GetBooks",
+                    In:   {
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{Path:"context", Alias:""},
+                            UserType:   "Context",
+                        },
+                        &looker.StructElement{
+                            ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+                            UserType:   "GetBooksReq",
+                            IsPointer:  false,
+                            Fields:     {
+                            },
+                            ProcessRower: false,
+                        },
+                    },
+                    Out: {
+                        &looker.SliceElement{
+                            ImportPath: looker.ImportElement{Path:"", Alias:"bookstore"},
+                            UserType:   "",
+                            Item:       &looker.StructElement{
+                                ImportPath: looker.ImportElement{Path:"github.com/go-gad/sal/examples/bookstore", Alias:""},
+                                UserType:   "GetBooksResp",
+                                IsPointer:  true,
+                                Fields:     {
+                                    {
+                                        Name:       "ID",
+                                        ImportPath: looker.ImportElement{},
+                                        BaseType:   "int64",
+                                        UserType:   "int64",
+                                        Anonymous:  false,
+                                        Tag:        "id",
+                                        Parents:    {},
+                                    },
+                                    {
+                                        Name:       "Title",
+                                        ImportPath: looker.ImportElement{},
+                                        BaseType:   "string",
+                                        UserType:   "string",
+                                        Anonymous:  false,
+                                        Tag:        "title",
+                                        Parents:    {},
+                                    },
+                                },
+                                ProcessRower: false,
+                            },
+                            IsPointer: false,
+                        },
+                        &looker.InterfaceElement{
+                            ImportPath: looker.ImportElement{},
+                            UserType:   "error",
+                        },
+                    },
+                },
+                &looker.Method{
                     Name: "SameName",
                     In:   {
                         &looker.InterfaceElement{

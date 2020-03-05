@@ -20,6 +20,7 @@ type Store interface {
 	UpdateAuthor(context.Context, *UpdateAuthorReq) error
 	UpdateAuthorResult(context.Context, *UpdateAuthorReq) (sql.Result, error)
 	SameName(context.Context, SameNameReq) (*SameNameResp, error)
+	GetBooks(context.Context, GetBooksReq) ([]*GetBooksResp, error)
 }
 
 type BaseAuthor struct {
@@ -91,4 +92,15 @@ type SameNameResp struct {
 
 type Foo struct {
 	Bar string
+}
+
+type GetBooksReq struct{}
+
+func (r *GetBooksReq) Query() string {
+	return `SELECT * FROM books`
+}
+
+type GetBooksResp struct {
+	ID    int64  `sql:"id"`
+	Title string `sql:"title"`
 }

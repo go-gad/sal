@@ -2,7 +2,7 @@ dist: trusty
 sudo: false
 
 language: go
-go: [ "1.12" ]
+go: [ "1.13" ]
 env:
   global:
   - PATH=$PATH:$HOME/gopath/bin
